@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Carousel</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        h1 {
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            text-align: center;
+        }
+
+        .carousel-container {
+            position: relative;
+            width: 100%;
+            max-width: 800px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .carousel-wrapper {
+            overflow: hidden;
+            position: relative;
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .card {
+            min-width: 100%;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .card-image {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .card iframe {
+            width: 100%;
+            height: 300px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .card-text {
+            text-align: center;
+            color: #333;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+
+        .nav-button {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.9);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #667eea;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .nav-button:hover {
+            background: white;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .nav-button:focus {
+            outline: 3px solid #667eea;
+            outline-offset: 2px;
+        }
+
+        .nav-button.prev {
+            left: 20px;
+        }
+
+        .nav-button.next {
+            right: 20px;
+        }
+
+        .dots-container {
+            display: flex;
+            justify-content: center;
+            gap: 12px;
+            padding: 20px;
+            background: white;
+        }
+
+        .dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #ddd;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            padding: 0;
+        }
+
+        .dot:focus {
+            outline: 2px solid #667eea;
+            outline-offset: 3px;
+        }
+
+        .dot.active {
+            background: #667eea;
+            transform: scale(1.3);
+        }
+
+        .dot:hover {
+            background: #764ba2;
+        }
+
+        @media (max-width: 600px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .card {
+                padding: 20px;
+            }
+
+            .card-image {
+                height: 200px;
+            }
+            
+            .card iframe {
+                height: 200px;
+            }
+
+            .nav-button {
+                width: 40px;
+                height: 40px;
+                font-size: 20px;
+            }
+
+            .nav-button.prev {
+                left: 10px;
+            }
+
+            .nav-button.next {
+                right: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Explore Amazing Places</h1>
+    
+    <div class="carousel-container" role="region" aria-label="Image carousel">
+        <div class="carousel-wrapper">
+            <div class="carousel-track" id="carouselTrack" role="list">
+                <div class="card" role="listitem">
+                    <img src="" alt="Mountain landscape with snow-capped peaks touching the clouds" class="card-image">
+                    <p class="card-text">Discover breathtaking mountain ranges where peaks touch the clouds and nature reveals its grandest scale. Perfect for adventurers seeking serenity and challenge.</p>
+                </div>
+                
+                <div class="card" role="listitem">
+                    <img src="" alt="Tropical beach with crystal-clear turquoise waters and golden sand" class="card-image">
+                    <p class="card-text">Escape to pristine beaches with crystal-clear waters and golden sands. The ultimate destination for relaxation and tropical paradise experiences.</p>
+                </div>
+                
+                <div class="card" role="listitem">
+                    <img src="" alt="Modern city skyline with tall buildings and urban architecture" class="card-image">
+                    <p class="card-text">Experience vibrant urban landscapes where modern architecture meets cultural heritage. Cities that never sleep and always inspire.</p>
+                </div>
+                
+                <div class="card" role="listitem">
+                    <img src="" alt="Forest path with sunlight filtering through tall trees" class="card-image">
+                    <p class="card-text">Wander through ancient forests where sunlight filters through canopies and trails lead to hidden wonders. Nature's tranquility at its finest.</p>
+                </div>
+                
+                <div class="card" role="listitem">
+                    <img src="" alt="Desert landscape with golden sand dunes under a clear sky" class="card-image">
+                    <p class="card-text">Journey across vast desert landscapes where dunes create an ever-changing canvas of gold and amber. Adventure awaits in the endless horizon.</p>
+                </div>
+                
+                <div class="card" role="listitem">
+                    <iframe class="card-image" src="" title="Baby Shark Dance - Most Watched Video on YouTube" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+                    <p class="card-text">Watch the most viewed video on YouTube with over 15 billion views. This viral phenomenon has captivated audiences worldwide.</p>
+                </div>
+            </div>
+        </div>
+        
+        <button class="nav-button prev" id="prevBtn" aria-label="Previous slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+        </button>
+        <button class="nav-button next" id="nextBtn" aria-label="Next slide">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+        </button>
+        
+        <div class="dots-container" id="dotsContainer" role="tablist" aria-label="Carousel navigation">
+            <button class="dot active" data-index="0" role="tab" aria-label="Go to slide 1" aria-selected="true"></button>
+            <button class="dot" data-index="1" role="tab" aria-label="Go to slide 2" aria-selected="false"></button>
+            <button class="dot" data-index="2" role="tab" aria-label="Go to slide 3" aria-selected="false"></button>
+            <button class="dot" data-index="3" role="tab" aria-label="Go to slide 4" aria-selected="false"></button>
+            <button class="dot" data-index="4" role="tab" aria-label="Go to slide 5" aria-selected="false"></button>
+            <button class="dot" data-index="5" role="tab" aria-label="Go to slide 6" aria-selected="false"></button>
+        </div>
+    </div>
+
+    <script>
+        // ==============================================
+        // EASY CONFIGURATION - EDIT CONTENT HERE
+        // ==============================================
+        const carouselContent = [
+            {
+                type: 'image',
+                imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop',
+                alt: 'Mountain landscape with snow-capped peaks touching the clouds',
+                text: 'Discover breathtaking mountain ranges where peaks touch the clouds and nature reveals its grandest scale. Perfect for adventurers seeking serenity and challenge.'
+            },
+            {
+                type: 'image',
+                imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop',
+                alt: 'Tropical beach with crystal-clear turquoise waters and golden sand',
+                text: 'Escape to pristine beaches with crystal-clear waters and golden sands. The ultimate destination for relaxation and tropical paradise experiences.'
+            },
+            {
+                type: 'image',
+                imageUrl: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&h=600&fit=crop',
+                alt: 'Modern city skyline with tall buildings and urban architecture',
+                text: 'Experience vibrant urban landscapes where modern architecture meets cultural heritage. Cities that never sleep and always inspire.'
+            },
+            {
+                type: 'image',
+                imageUrl: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=800&h=600&fit=crop',
+                alt: 'Forest path with sunlight filtering through tall trees',
+                text: 'Wander through ancient forests where sunlight filters through canopies and trails lead to hidden wonders. Nature\'s tranquility at its finest.'
+            },
+            {
+                type: 'image',
+                imageUrl: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&h=600&fit=crop',
+                alt: 'Desert landscape with golden sand dunes under a clear sky',
+                text: 'Journey across vast desert landscapes where dunes create an ever-changing canvas of gold and amber. Adventure awaits in the endless horizon.'
+            },
+            {
+                type: 'video',
+                youtubeUrl: 'https://www.youtube.com/embed/XqZsoesa55w',
+                title: 'Baby Shark Dance - Most Watched Video on YouTube',
+                text: 'Watch the most viewed video on YouTube with over 15 billion views. This viral phenomenon has captivated audiences worldwide.'
+            }
+        ];
+        // ==============================================
+        // END OF EASY CONFIGURATION
+        // ==============================================
+
+        // Set images and videos from configuration
+        const cards = document.querySelectorAll('.card');
+        cards.forEach((card, index) => {
+            const content = carouselContent[index];
+            const mediaElement = card.querySelector('.card-image');
+            
+            if (content.type === 'image') {
+                if (mediaElement.tagName === 'IMG') {
+                    mediaElement.src = content.imageUrl;
+                    mediaElement.alt = content.alt;
+                }
+            } else if (content.type === 'video') {
+                if (mediaElement.tagName === 'IFRAME') {
+                    mediaElement.src = content.youtubeUrl;
+                    mediaElement.setAttribute('title', content.title);
+                }
+            }
+        });
+
+        const track = document.getElementById('carouselTrack');
+        const prevBtn = document.getElementById('prevBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const dots = document.querySelectorAll('.dot');
+        let currentIndex = 0;
+        const totalCards = carouselContent.length;
+
+        function updateCarousel() {
+            track.style.transform = `translateX(-${currentIndex * 100}%)`;
+            
+            dots.forEach((dot, index) => {
+                const isActive = index === currentIndex;
+                dot.classList.toggle('active', isActive);
+                dot.setAttribute('aria-selected', isActive);
+            });
+            
+            // Announce slide change to screen readers
+            const currentCard = track.children[currentIndex];
+            if (currentCard) {
+                const announcement = `Slide ${currentIndex + 1} of ${totalCards}`;
+                announceToScreenReader(announcement);
+            }
+        }
+
+        function announceToScreenReader(message) {
+            const announcement = document.createElement('div');
+            announcement.setAttribute('role', 'status');
+            announcement.setAttribute('aria-live', 'polite');
+            announcement.setAttribute('aria-atomic', 'true');
+            announcement.style.position = 'absolute';
+            announcement.style.left = '-10000px';
+            announcement.style.width = '1px';
+            announcement.style.height = '1px';
+            announcement.style.overflow = 'hidden';
+            announcement.textContent = message;
+            document.body.appendChild(announcement);
+            setTimeout(() => document.body.removeChild(announcement), 1000);
+        }
+
+        function goToSlide(index) {
+            currentIndex = index;
+            updateCarousel();
+        }
+
+        function nextSlide() {
+            currentIndex = (currentIndex + 1) % totalCards;
+            updateCarousel();
+        }
+
+        function prevSlide() {
+            currentIndex = (currentIndex - 1 + totalCards) % totalCards;
+            updateCarousel();
+        }
+
+        nextBtn.addEventListener('click', nextSlide);
+        prevBtn.addEventListener('click', prevSlide);
+
+        dots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                const index = parseInt(dot.getAttribute('data-index'));
+                goToSlide(index);
+            });
+        });
+
+        // Keyboard navigation
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowLeft') {
+                prevSlide();
+                prevBtn.focus();
+            }
+            if (e.key === 'ArrowRight') {
+                nextSlide();
+                nextBtn.focus();
+            }
+        });
+
+        // Touch support for mobile
+        let touchStartX = 0;
+        let touchEndX = 0;
+
+        track.addEventListener('touchstart', (e) => {
+            touchStartX = e.changedTouches[0].screenX;
+        });
+
+        track.addEventListener('touchend', (e) => {
+            touchEndX = e.changedTouches[0].screenX;
+            if (touchStartX - touchEndX > 50) nextSlide();
+            if (touchEndX - touchStartX > 50) prevSlide();
+        });
+    </script>
+</body>
+</html>
