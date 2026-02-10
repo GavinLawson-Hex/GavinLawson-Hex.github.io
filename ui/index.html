@@ -5,6 +5,34 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Image Carousel</title>
     <style>
+        :root {
+            /* Light Theme Tokens */
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --container-bg: #ffffff;
+            --text-primary: #333333;
+            --text-secondary: #666666;
+            --card-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            --menu-bg: #ffffff;
+            --menu-item-bg: #f8f9fa;
+            --menu-item-hover: #667eea;
+            --accent-color: #667eea;
+            --dot-inactive: #dddddd;
+            --transition-speed: 0.3s;
+        }
+
+        [data-theme="dark"] {
+            /* Dark Theme Tokens */
+            --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            --container-bg: #1f2937;
+            --text-primary: #f3f4f6;
+            --text-secondary: #9ca3af;
+            --card-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            --menu-bg: #111827;
+            --menu-item-bg: #374151;
+            --menu-item-hover: #4f46e5;
+            --dot-inactive: #4b5563;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,14 +40,15 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-gradient);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             padding: 20px;
+            transition: background var(--transition-speed) ease;
         }
 
         h1 {
@@ -27,9 +56,10 @@
             margin-bottom: 30px;
             font-size: 2.5rem;
             text-align: center;
+            text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
-        /* Settings Menu Styles */
+        /* Settings Menu */
         .settings-menu {
             position: fixed;
             top: 20px;
@@ -38,7 +68,7 @@
         }
 
         .gear-btn {
-            background: white;
+            background: var(--menu-bg);
             border: none;
             width: 50px;
             height: 50px;
@@ -48,8 +78,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #667eea;
-            transition: transform 0.3s ease, background 0.3s ease, color 0.3s ease;
+            color: var(--accent-color);
+            transition: all var(--transition-speed) ease;
         }
 
         .settings-menu:hover .gear-btn, 
@@ -58,7 +88,7 @@
         }
 
         .settings-menu.active .gear-btn {
-            background: #667eea;
+            background: var(--accent-color);
             color: white;
         }
 
@@ -66,7 +96,7 @@
             position: absolute;
             top: 60px;
             left: 0;
-            background: white;
+            background: var(--menu-bg);
             padding: 10px;
             border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
@@ -76,7 +106,7 @@
             opacity: 0;
             visibility: hidden;
             transform: translateY(-10px);
-            transition: all 0.3s ease;
+            transition: all var(--transition-speed) ease;
             min-width: 220px;
         }
 
@@ -88,13 +118,13 @@
         }
 
         .settings-content button {
-            background: #f8f9fa;
+            background: var(--menu-item-bg);
             border: none;
             padding: 12px 15px;
             text-align: left;
             border-radius: 8px;
             cursor: pointer;
-            color: #333;
+            color: var(--text-primary);
             font-size: 0.9rem;
             font-weight: 600;
             transition: all 0.2s;
@@ -104,29 +134,25 @@
         }
 
         .settings-content button:hover {
-            background: #667eea;
+            background: var(--menu-item-hover);
             color: white;
         }
 
-        /* Carousel Styles */
+        /* Carousel Container */
         .carousel-container {
             position: relative;
             width: 100%;
             max-width: 800px;
-            background: white;
+            background: var(--container-bg);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            box-shadow: var(--card-shadow);
             overflow: hidden;
-        }
-
-        .carousel-wrapper {
-            overflow: hidden;
-            position: relative;
+            transition: background var(--transition-speed) ease;
         }
 
         .carousel-track {
             display: flex;
-            transition: transform 0.5s ease-in-out;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .card {
@@ -137,57 +163,55 @@
             align-items: center;
         }
 
-        .card-image {
+        .card-media-wrapper {
             width: 100%;
-            height: 300px;
-            object-fit: cover;
+            height: 380px;
             border-radius: 15px;
             margin-bottom: 20px;
+            overflow: hidden;
+            background: #000;
+            position: relative;
         }
-        
-        .card iframe {
+
+        .card-media {
             width: 100%;
-            height: 300px;
-            border-radius: 15px;
-            margin-bottom: 20px;
+            height: 100%;
+            object-fit: cover;
+            border: none;
         }
 
         .card-text {
             text-align: center;
-            color: #333;
+            color: var(--text-primary);
             font-size: 1.1rem;
             line-height: 1.6;
+            transition: color var(--transition-speed) ease;
         }
 
         .nav-button {
             position: absolute;
             top: 50%;
             transform: translateY(-50%);
-            background: rgba(255, 255, 255, 0.9);
+            background: var(--container-bg);
             border: none;
-            width: 50px;
-            height: 50px;
+            width: 45px;
+            height: 45px;
             border-radius: 50%;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
-            color: #667eea;
-            transition: all 0.3s ease;
+            color: var(--accent-color);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
             z-index: 10;
+            transition: all 0.3s ease;
         }
 
-        .nav-button:hover {
-            background: white;
+        .nav-button:hover { 
             transform: translateY(-50%) scale(1.1);
+            background: var(--accent-color);
+            color: white;
         }
-
-        .nav-button:focus {
-            outline: 3px solid #667eea;
-            outline-offset: 2px;
-        }
-
         .nav-button.prev { left: 20px; }
         .nav-button.next { right: 20px; }
 
@@ -196,213 +220,182 @@
             justify-content: center;
             gap: 12px;
             padding: 20px;
-            background: white;
+            background: var(--container-bg);
+            transition: background var(--transition-speed) ease;
         }
 
         .dot {
-            width: 12px;
-            height: 12px;
+            width: 10px;
+            height: 10px;
             border-radius: 50%;
-            background: #ddd;
+            background: var(--dot-inactive);
             border: none;
             cursor: pointer;
             transition: all 0.3s ease;
-            padding: 0;
         }
 
         .dot.active {
-            background: #667eea;
-            transform: scale(1.3);
+            background: var(--accent-color);
+            transform: scale(1.4);
         }
 
-        /* Masonry View Overrides */
-        .masonry-view {
-            background: transparent;
-            box-shadow: none;
-            max-width: 1200px;
-            overflow: visible;
-        }
-        
-        .masonry-view .carousel-wrapper { overflow: visible; }
-        
+        /* Masonry Support */
+        .masonry-view { background: transparent; box-shadow: none; max-width: 1200px; }
         .masonry-view .carousel-track {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 25px;
             transform: none !important;
         }
-        
         .masonry-view .card {
-            min-width: auto;
-            background: white;
+            background: var(--container-bg);
             border-radius: 15px;
             box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            padding: 20px;
+            min-width: auto;
         }
-        
+        .masonry-view .card-media-wrapper { height: 250px; }
         .masonry-view .nav-button, .masonry-view .dots-container { display: none; }
 
         @media (max-width: 600px) {
-            h1 { font-size: 1.8rem; }
             .card { padding: 20px; }
-            .card-image, .card iframe { height: 200px; }
-            .settings-menu { top: 10px; left: 10px; }
+            .card-media-wrapper { height: 250px; }
+            h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Accessibility Gear Menu -->
     <div class="settings-menu" id="settingsMenu">
-        <button class="gear-btn" id="gearBtn" aria-label="Settings and Accessibility" aria-haspopup="true">
+        <button class="gear-btn" id="gearBtn" aria-label="Settings">
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="12" cy="12" r="3"></circle>
                 <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
             </svg>
         </button>
         <div class="settings-content">
+            <button id="themeToggle">
+                <svg id="themeIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                <span id="themeBtnText">Dark Mode</span>
+            </button>
             <button id="layoutToggle">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
-                <span id="layoutBtnText">Switch to Masonry View</span>
+                <span>Toggle Layout</span>
             </button>
             <button id="autoScrollToggle">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-                <span id="autoScrollBtnText">Enable Auto-Scroll</span>
+                <span id="autoScrollText">Auto-Scroll</span>
             </button>
         </div>
     </div>
 
-    <h1>Explore Amazing Places</h1>
+    <h1>Travel Destinations</h1>
     
-    <div class="carousel-container" id="mainContainer" role="region" aria-label="Image carousel">
-        <div class="carousel-wrapper">
-            <div class="carousel-track" id="carouselTrack" role="list">
-                <!-- Cards will be populated by JS -->
-            </div>
+    <div class="carousel-container" id="mainContainer">
+        <div class="carousel-track" id="carouselTrack">
+            <!-- Cards populated by JS -->
         </div>
         
-        <button class="nav-button prev" id="prevBtn" aria-label="Previous slide">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
+        <button class="nav-button prev" id="prevBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg>
         </button>
-        <button class="nav-button next" id="nextBtn" aria-label="Next slide">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
+        <button class="nav-button next" id="nextBtn">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
         </button>
         
-        <div class="dots-container" id="dotsContainer" role="tablist">
-            <!-- Dots populated by JS -->
-        </div>
+        <div class="dots-container" id="dotsContainer"></div>
     </div>
 
     <script>
-        const carouselContent = [
-            { type: 'image', imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&h=600&fit=crop', alt: 'Mountain landscape', text: 'Discover breathtaking mountain ranges where peaks touch the clouds.' },
-            { type: 'image', imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&h=600&fit=crop', alt: 'Tropical beach', text: 'Escape to pristine beaches with crystal-clear waters and golden sands.' },
-            { type: 'image', imageUrl: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&h=600&fit=crop', alt: 'City skyline', text: 'Experience vibrant urban landscapes where modern architecture meets heritage.' },
-            { type: 'image', imageUrl: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=800&h=600&fit=crop', alt: 'Forest path', text: 'Wander through ancient forests where sunlight filters through canopies.' },
-            { type: 'image', imageUrl: 'https://images.unsplash.com/photo-1509316785289-025f5b846b35?w=800&h=600&fit=crop', alt: 'Desert landscape', text: 'Journey across vast desert landscapes with ever-changing golden dunes.' },
-            { type: 'video', youtubeUrl: 'https://www.youtube.com/embed/XqZsoesa55w', title: 'Baby Shark Dance', text: 'Watch the most viewed video on YouTube with over 15 billion views.' }
+        const content = [
+            { type: 'image', src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&fit=crop', text: 'Majestic mountain ranges reaching for the sky.' },
+            { type: 'image', src: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&fit=crop', text: 'Pristine beaches with crystal clear turquoise waters.' },
+            { type: 'youtube', src: 'https://www.youtube.com/watch?v=Q1gyAXsKPl0', text: 'Stunning aerial views of the Swiss Alps (YouTube).' },
+            { type: 'image', src: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&fit=crop', text: 'Futuristic city skylines glowing at twilight.' },
+            { type: 'image', src: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=800&fit=crop', text: 'Enchanted forests where light dances through trees.' }
         ];
 
         const track = document.getElementById('carouselTrack');
         const dotsContainer = document.getElementById('dotsContainer');
-        const layoutToggle = document.getElementById('layoutToggle');
-        const autoScrollToggle = document.getElementById('autoScrollToggle');
-        const mainContainer = document.getElementById('mainContainer');
-        const settingsMenu = document.getElementById('settingsMenu');
-        const gearBtn = document.getElementById('gearBtn');
-        
         let currentIndex = 0;
         let isAutoScrolling = false;
-        let isMasonryView = false;
         let autoScrollInterval = null;
 
-        // Initialize Content
-        carouselContent.forEach((item, i) => {
+        // Init
+        content.forEach((item, i) => {
             const card = document.createElement('div');
             card.className = 'card';
-            card.setAttribute('role', 'listitem');
             
-            if(item.type === 'image') {
-                card.innerHTML = `<img src="${item.imageUrl}" alt="${item.alt}" class="card-image"><p class="card-text">${item.text}</p>`;
+            let mediaHtml = '';
+            if (item.type === 'youtube') {
+                mediaHtml = `
+                    <div class="card-media-wrapper">
+                        <iframe class="card-media" src="${item.src}?rel=0&modestbranding=1" 
+                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                            allowfullscreen>
+                        </iframe>
+                    </div>`;
             } else {
-                card.innerHTML = `<iframe class="card-image" src="${item.youtubeUrl}" title="${item.title}" frameborder="0" allowfullscreen></iframe><p class="card-text">${item.text}</p>`;
+                mediaHtml = `
+                    <div class="card-media-wrapper">
+                        <img src="${item.src}" class="card-media" alt="Travel Image">
+                    </div>`;
             }
+
+            card.innerHTML = `${mediaHtml}<p class="card-text">${item.text}</p>`;
             track.appendChild(card);
 
             const dot = document.createElement('button');
             dot.className = `dot ${i === 0 ? 'active' : ''}`;
-            dot.setAttribute('aria-label', `Go to slide ${i + 1}`);
-            dot.addEventListener('click', () => { currentIndex = i; updateCarousel(); resetAutoScroll(); });
+            dot.addEventListener('click', () => { currentIndex = i; update(); });
             dotsContainer.appendChild(dot);
         });
 
-        const dots = document.querySelectorAll('.dot');
-
-        function updateCarousel() {
-            if (isMasonryView) return;
+        function update() {
             track.style.transform = `translateX(-${currentIndex * 100}%)`;
-            dots.forEach((dot, i) => dot.classList.toggle('active', i === currentIndex));
+            document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentIndex));
         }
 
-        function nextSlide() {
-            currentIndex = (currentIndex + 1) % carouselContent.length;
-            updateCarousel();
-        }
-
-        // Settings Menu Interactions
-        gearBtn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            settingsMenu.classList.toggle('active');
-        });
-
+        // Settings Menu
+        const gearBtn = document.getElementById('gearBtn');
+        const settingsMenu = document.getElementById('settingsMenu');
+        gearBtn.addEventListener('click', (e) => { e.stopPropagation(); settingsMenu.classList.toggle('active'); });
         document.addEventListener('click', () => settingsMenu.classList.remove('active'));
-        settingsMenu.querySelector('.settings-content').addEventListener('click', (e) => e.stopPropagation());
 
-        // Toggle Actions
-        layoutToggle.addEventListener('click', () => {
-            isMasonryView = !isMasonryView;
-            mainContainer.classList.toggle('masonry-view', isMasonryView);
-            document.getElementById('layoutBtnText').textContent = isMasonryView ? 'Switch to Carousel View' : 'Switch to Masonry View';
-            if (isMasonryView && isAutoScrolling) stopAutoScroll();
-            updateCarousel();
+        // Theme Toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const themeIcon = document.getElementById('themeIcon');
+        const themeBtnText = document.getElementById('themeBtnText');
+        
+        themeToggle.addEventListener('click', () => {
+            const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+            document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
+            
+            themeBtnText.textContent = isDark ? 'Dark Mode' : 'Light Mode';
+            themeIcon.innerHTML = isDark 
+                ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>' 
+                : '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
         });
 
-        autoScrollToggle.addEventListener('click', () => {
-            if (isMasonryView) return;
+        // Other Toggles
+        document.getElementById('layoutToggle').addEventListener('click', () => {
+            const main = document.getElementById('mainContainer');
+            main.classList.toggle('masonry-view');
+            if (main.classList.contains('masonry-view')) stopAuto();
+            update();
+        });
+
+        document.getElementById('autoScrollToggle').addEventListener('click', () => {
             isAutoScrolling = !isAutoScrolling;
-            document.getElementById('autoScrollBtnText').textContent = isAutoScrolling ? 'Disable Auto-Scroll' : 'Enable Auto-Scroll';
-            isAutoScrolling ? startAutoScroll() : stopAutoScroll();
+            document.getElementById('autoScrollText').textContent = isAutoScrolling ? 'Stop Auto' : 'Auto-Scroll';
+            isAutoScrolling ? startAuto() : stopAuto();
         });
 
-        function startAutoScroll() {
-            if (!autoScrollInterval) autoScrollInterval = setInterval(nextSlide, 3000);
-        }
+        function startAuto() { if (!autoScrollInterval) autoScrollInterval = setInterval(() => { currentIndex = (currentIndex + 1) % content.length; update(); }, 4000); }
+        function stopAuto() { clearInterval(autoScrollInterval); autoScrollInterval = null; }
 
-        function stopAutoScroll() {
-            clearInterval(autoScrollInterval);
-            autoScrollInterval = null;
-        }
-
-        function resetAutoScroll() {
-            if (isAutoScrolling) { stopAutoScroll(); startAutoScroll(); }
-        }
-
-        document.getElementById('nextBtn').addEventListener('click', () => { nextSlide(); resetAutoScroll(); });
-        document.getElementById('prevBtn').addEventListener('click', () => { 
-            currentIndex = (currentIndex - 1 + carouselContent.length) % carouselContent.length; 
-            updateCarousel(); 
-            resetAutoScroll(); 
-        });
-
-        // Keyboard Support
-        document.addEventListener('keydown', (e) => {
-            if (isMasonryView) return;
-            if (e.key === 'ArrowRight') nextSlide();
-            if (e.key === 'ArrowLeft') { currentIndex = (currentIndex - 1 + carouselContent.length) % carouselContent.length; updateCarousel(); }
-        });
+        document.getElementById('nextBtn').addEventListener('click', () => { currentIndex = (currentIndex + 1) % content.length; update(); });
+        document.getElementById('prevBtn').addEventListener('click', () => { currentIndex = (currentIndex - 1 + content.length) % content.length; update(); });
     </script>
 </body>
 </html>
