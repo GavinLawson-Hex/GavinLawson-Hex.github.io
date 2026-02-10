@@ -3,12 +3,9 @@
  * 📝 HOW TO CHANGE CARDS (No Coding Knowledge Required)
  * -----------------------------------------------------------------
  * Each item inside the brackets [ ] below is one card.
- * * To add a new Image:
+ * To add a new Image:
  * 1. Add a comma after the last item.
  * 2. Copy and paste: { type: 'image', src: 'YOUR_URL_HERE', text: 'YOUR_DESCRIPTION_HERE' }
- * * To add a YouTube Video:
- * 1. Use type: 'youtube'
- * 2. The src must be an "embed" link (e.g., https://www.youtube.com/embed/VIDEO_ID)
  * -----------------------------------------------------------------
  */
 window.externalCarouselContent = [
