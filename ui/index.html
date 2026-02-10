@@ -6,7 +6,6 @@
     <title>Image Carousel</title>
     <style>
         :root {
-            /* Light Theme Tokens */
             --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             --container-bg: #ffffff;
             --text-primary: #333333;
@@ -21,7 +20,6 @@
         }
 
         [data-theme="dark"] {
-            /* Dark Theme Tokens */
             --bg-gradient: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
             --container-bg: #1f2937;
             --text-primary: #f3f4f6;
@@ -33,11 +31,7 @@
             --dot-inactive: #4b5563;
         }
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        * { margin: 0; padding: 0; box-sizing: border-box; }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -59,207 +53,108 @@
             text-shadow: 0 2px 10px rgba(0,0,0,0.2);
         }
 
-        /* Settings Menu */
-        .settings-menu {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
-        }
+        .settings-menu { position: fixed; top: 20px; left: 20px; z-index: 1000; }
 
         .gear-btn {
             background: var(--menu-bg);
             border: none;
-            width: 50px;
-            height: 50px;
+            width: 50px; height: 50px;
             border-radius: 50%;
             cursor: pointer;
             box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-            display: flex;
-            align-items: center;
-            justify-content: center;
+            display: flex; align-items: center; justify-content: center;
             color: var(--accent-color);
             transition: all var(--transition-speed) ease;
         }
 
-        .settings-menu:hover .gear-btn, 
-        .settings-menu.active .gear-btn {
-            transform: rotate(90deg);
-        }
-
-        .settings-menu.active .gear-btn {
-            background: var(--accent-color);
-            color: white;
-        }
+        .settings-menu:hover .gear-btn, .settings-menu.active .gear-btn { transform: rotate(90deg); }
+        .settings-menu.active .gear-btn { background: var(--accent-color); color: white; }
 
         .settings-content {
-            position: absolute;
-            top: 60px;
-            left: 0;
+            position: absolute; top: 60px; left: 0;
             background: var(--menu-bg);
-            padding: 10px;
-            border-radius: 12px;
+            padding: 10px; border-radius: 12px;
             box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            opacity: 0;
-            visibility: hidden;
+            display: flex; flex-direction: column; gap: 8px;
+            opacity: 0; visibility: hidden;
             transform: translateY(-10px);
             transition: all var(--transition-speed) ease;
             min-width: 220px;
         }
 
-        .settings-menu:hover .settings-content,
-        .settings-menu.active .settings-content {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
+        .settings-menu:hover .settings-content, .settings-menu.active .settings-content {
+            opacity: 1; visibility: visible; transform: translateY(0);
         }
 
         .settings-content button {
             background: var(--menu-item-bg);
-            border: none;
-            padding: 12px 15px;
-            text-align: left;
-            border-radius: 8px;
-            cursor: pointer;
-            color: var(--text-primary);
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.2s;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+            border: none; padding: 12px 15px;
+            text-align: left; border-radius: 8px;
+            cursor: pointer; color: var(--text-primary);
+            font-size: 0.9rem; font-weight: 600;
+            transition: all 0.2s; display: flex; align-items: center; gap: 10px;
         }
 
-        .settings-content button:hover {
-            background: var(--menu-item-hover);
-            color: white;
-        }
+        .settings-content button:hover { background: var(--menu-item-hover); color: white; }
 
-        /* Carousel Container */
         .carousel-container {
-            position: relative;
-            width: 100%;
-            max-width: 800px;
-            background: var(--container-bg);
-            border-radius: 20px;
-            box-shadow: var(--card-shadow);
-            overflow: hidden;
+            position: relative; width: 100%; max-width: 800px;
+            background: var(--container-bg); border-radius: 20px;
+            box-shadow: var(--card-shadow); overflow: hidden;
             transition: background var(--transition-speed) ease;
         }
 
-        .carousel-track {
-            display: flex;
-            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        }
+        .carousel-track { display: flex; transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
 
-        .card {
-            min-width: 100%;
-            padding: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .card { min-width: 100%; padding: 40px; display: flex; flex-direction: column; align-items: center; }
 
         .card-media-wrapper {
-            width: 100%;
-            height: 380px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            overflow: hidden;
-            background: #000;
-            position: relative;
+            width: 100%; height: 380px; border-radius: 15px;
+            margin-bottom: 20px; overflow: hidden; background: #000; position: relative;
         }
 
-        .card-media {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            border: none;
-        }
+        .card-media { width: 100%; height: 100%; object-fit: cover; border: none; }
 
-        .card-text {
-            text-align: center;
-            color: var(--text-primary);
-            font-size: 1.1rem;
-            line-height: 1.6;
-            transition: color var(--transition-speed) ease;
-        }
+        .card-text { text-align: center; color: var(--text-primary); font-size: 1.1rem; line-height: 1.6; }
 
         .nav-button {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            background: var(--container-bg);
-            border: none;
-            width: 45px;
-            height: 45px;
-            border-radius: 50%;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--accent-color);
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            z-index: 10;
-            transition: all 0.3s ease;
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: var(--container-bg); border: none;
+            width: 45px; height: 45px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+            color: var(--accent-color); box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            z-index: 10; transition: all 0.3s ease;
         }
 
-        .nav-button:hover { 
-            transform: translateY(-50%) scale(1.1);
-            background: var(--accent-color);
-            color: white;
-        }
+        .nav-button:hover { transform: translateY(-50%) scale(1.1); background: var(--accent-color); color: white; }
         .nav-button.prev { left: 20px; }
         .nav-button.next { right: 20px; }
 
         .dots-container {
-            display: flex;
-            justify-content: center;
-            gap: 12px;
-            padding: 20px;
-            background: var(--container-bg);
-            transition: background var(--transition-speed) ease;
+            display: flex; justify-content: center; gap: 12px;
+            padding: 20px; background: var(--container-bg);
         }
 
         .dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--dot-inactive);
-            border: none;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            width: 10px; height: 10px; border-radius: 50%;
+            background: var(--dot-inactive); border: none;
+            cursor: pointer; transition: all 0.3s ease;
         }
 
-        .dot.active {
-            background: var(--accent-color);
-            transform: scale(1.4);
-        }
+        .dot.active { background: var(--accent-color); transform: scale(1.4); }
 
-        /* Masonry Support */
+        /* Masonry View */
         .masonry-view { background: transparent; box-shadow: none; max-width: 1200px; }
         .masonry-view .carousel-track {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 25px;
-            transform: none !important;
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px; transform: none !important;
         }
-        .masonry-view .card {
-            background: var(--container-bg);
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            padding: 20px;
-            min-width: auto;
-        }
-        .masonry-view .card-media-wrapper { height: 250px; }
+        .masonry-view .card { background: var(--container-bg); border-radius: 15px; min-width: auto; padding: 20px; margin-bottom: 10px; }
+        .masonry-view .card-media-wrapper { height: 220px; }
         .masonry-view .nav-button, .masonry-view .dots-container { display: none; }
 
         @media (max-width: 600px) {
-            .card { padding: 20px; }
-            .card-media-wrapper { height: 250px; }
+            .card-media-wrapper { height: 240px; }
             h1 { font-size: 1.8rem; }
         }
     </style>
@@ -292,150 +187,110 @@
     <h1>Travel Destinations</h1>
     
     <div class="carousel-container" id="mainContainer">
-        <div class="carousel-track" id="carouselTrack">
-            <!-- Cards populated by JS -->
-        </div>
-        
-        <button class="nav-button prev" id="prevBtn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg>
-        </button>
-        <button class="nav-button next" id="nextBtn">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg>
-        </button>
-        
+        <div class="carousel-track" id="carouselTrack"></div>
+        <button class="nav-button prev" id="prevBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="15 18 9 12 15 6"></polyline></svg></button>
+        <button class="nav-button next" id="nextBtn"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="9 18 15 12 9 6"></polyline></svg></button>
         <div class="dots-container" id="dotsContainer"></div>
     </div>
 
-    <script>  
-        /* --- APP CONFIGURATION AND LOADING --- */
-
+    <script>
         const defaultContent = [
             { type: 'image', src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&fit=crop', text: 'Majestic mountain ranges.' },
             { type: 'youtube', src: 'https://www.youtube.com/embed/kVxTrhojpFI', text: 'Swiss Alps Video.' }
         ];
 
         let content = defaultContent;
+        let currentIndex = 0;
+        let autoScrollInterval = null;
 
         async function initApp() {
             const urlParams = new URLSearchParams(window.location.search);
-            let configUrl = urlParams.get('config');
+            let configName = urlParams.get('config');
 
-            if (configUrl) {
-                // Prepend ./ if it's just a filename to help local servers resolve it
-                if (!configUrl.includes('/') && !configUrl.startsWith('.')) {
-                    configUrl = './' + configUrl;
-                }
+            if (configName) {
+                // Remove potential path issues
+                configName = configName.replace(/^\/+/, ''); 
+                const configUrl = './' + configName;
 
                 try {
                     await new Promise((resolve, reject) => {
                         const script = document.createElement('script');
                         script.src = configUrl;
-                        script.async = true;
                         script.onload = () => {
                             if (window.externalCarouselContent) {
                                 content = window.externalCarouselContent;
                                 resolve();
-                            } else {
-                                reject(new Error("window.externalCarouselContent not found in script"));
-                            }
+                            } else reject(new Error("Content variable missing"));
                         };
-                        script.onerror = () => reject(new Error("Failed to load script: " + configUrl));
+                        script.onerror = () => reject(new Error("File not found"));
                         document.head.appendChild(script);
                     });
                 } catch (e) {
-                    console.error("External config error:", e.message);
-                    // Use defaults if loading fails
-                    content = defaultContent;
+                    console.warn("Using defaults:", e.message);
                 }
             }
             renderCarousel();
         }
 
-        /* --- UI RENDER LOGIC --- */
-
-        const track = document.getElementById('carouselTrack');
-        const dotsContainer = document.getElementById('dotsContainer');
-        let currentIndex = 0;
-        let isAutoScrolling = false;
-        let autoScrollInterval = null;
-
         function renderCarousel() {
-            track.innerHTML = '';
-            dotsContainer.innerHTML = '';
+            const track = document.getElementById('carouselTrack');
+            const dots = document.getElementById('dotsContainer');
+            track.innerHTML = ''; dots.innerHTML = '';
 
             content.forEach((item, i) => {
                 const card = document.createElement('div');
                 card.className = 'card';
-                
-                let mediaHtml = '';
-                if (item.type === 'youtube') {
-                    mediaHtml = `
-                        <div class="card-media-wrapper">
-                            <iframe class="card-media" src="${item.src}?rel=0&modestbranding=1" 
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                                allowfullscreen>
-                            </iframe>
-                        </div>`;
-                } else {
-                    mediaHtml = `
-                        <div class="card-media-wrapper">
-                            <img src="${item.src}" class="card-media" alt="Travel Image" onerror="this.src='https://via.placeholder.com/800x400?text=Image+Unavailable'">
-                        </div>`;
-                }
-
-                card.innerHTML = `${mediaHtml}<p class="card-text">${item.text}</p>`;
+                card.innerHTML = `
+                    <div class="card-media-wrapper">
+                        ${item.type === 'youtube' 
+                            ? `<iframe class="card-media" src="${item.src}?rel=0" allowfullscreen></iframe>`
+                            : `<img src="${item.src}" class="card-media" alt="image" onerror="this.src='https://via.placeholder.com/800x400'">`
+                        }
+                    </div>
+                    <p class="card-text">${item.text}</p>`;
                 track.appendChild(card);
 
                 const dot = document.createElement('button');
                 dot.className = `dot ${i === 0 ? 'active' : ''}`;
-                dot.addEventListener('click', () => { currentIndex = i; update(); });
-                dotsContainer.appendChild(dot);
+                dot.onclick = () => { currentIndex = i; update(); };
+                dots.appendChild(dot);
             });
             update();
         }
 
         function update() {
+            const track = document.getElementById('carouselTrack');
             track.style.transform = `translateX(-${currentIndex * 100}%)`;
             document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentIndex));
         }
 
-        const gearBtn = document.getElementById('gearBtn');
-        const settingsMenu = document.getElementById('settingsMenu');
-        gearBtn.addEventListener('click', (e) => { e.stopPropagation(); settingsMenu.classList.toggle('active'); });
-        document.addEventListener('click', () => settingsMenu.classList.remove('active'));
-
-        const themeToggle = document.getElementById('themeToggle');
-        const themeIcon = document.getElementById('themeIcon');
-        const themeBtnText = document.getElementById('themeBtnText');
+        // Event Listeners
+        document.getElementById('nextBtn').onclick = () => { currentIndex = (currentIndex + 1) % content.length; update(); };
+        document.getElementById('prevBtn').onclick = () => { currentIndex = (currentIndex - 1 + content.length) % content.length; update(); };
         
-        themeToggle.addEventListener('click', () => {
+        document.getElementById('gearBtn').onclick = (e) => { e.stopPropagation(); document.getElementById('settingsMenu').classList.toggle('active'); };
+        document.onclick = () => document.getElementById('settingsMenu').classList.remove('active');
+
+        document.getElementById('themeToggle').onclick = () => {
             const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
             document.documentElement.setAttribute('data-theme', isDark ? 'light' : 'dark');
-            
-            themeBtnText.textContent = isDark ? 'Dark Mode' : 'Light Mode';
-            themeIcon.innerHTML = isDark 
-                ? '<path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>' 
-                : '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
-        });
+            document.getElementById('themeBtnText').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+        };
 
-        document.getElementById('layoutToggle').addEventListener('click', () => {
-            const main = document.getElementById('mainContainer');
-            main.classList.toggle('masonry-view');
-            if (main.classList.contains('masonry-view')) stopAuto();
+        document.getElementById('layoutToggle').onclick = () => {
+            document.getElementById('mainContainer').classList.toggle('masonry-view');
             update();
-        });
+        };
 
-        document.getElementById('autoScrollToggle').addEventListener('click', () => {
-            isAutoScrolling = !isAutoScrolling;
-            document.getElementById('autoScrollText').textContent = isAutoScrolling ? 'Stop Auto' : 'Auto-Scroll';
-            isAutoScrolling ? startAuto() : stopAuto();
-        });
-
-        function startAuto() { if (!autoScrollInterval) autoScrollInterval = setInterval(() => { currentIndex = (currentIndex + 1) % content.length; update(); }, 4000); }
-        function stopAuto() { clearInterval(autoScrollInterval); autoScrollInterval = null; }
-
-        document.getElementById('nextBtn').addEventListener('click', () => { currentIndex = (currentIndex + 1) % content.length; update(); });
-        document.getElementById('prevBtn').addEventListener('click', () => { currentIndex = (currentIndex - 1 + content.length) % content.length; update(); });
+        document.getElementById('autoScrollToggle').onclick = () => {
+            if (autoScrollInterval) {
+                clearInterval(autoScrollInterval); autoScrollInterval = null;
+                document.getElementById('autoScrollText').textContent = 'Auto-Scroll';
+            } else {
+                autoScrollInterval = setInterval(() => { currentIndex = (currentIndex + 1) % content.length; update(); }, 4000);
+                document.getElementById('autoScrollText').textContent = 'Stop Auto';
+            }
+        };
 
         initApp();
     </script>
