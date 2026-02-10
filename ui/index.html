@@ -208,7 +208,6 @@
             let configName = urlParams.get('config');
 
             if (configName) {
-                // Remove potential path issues
                 configName = configName.replace(/^\/+/, ''); 
                 const configUrl = './' + configName;
 
@@ -264,7 +263,6 @@
             document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentIndex));
         }
 
-        // Event Listeners
         document.getElementById('nextBtn').onclick = () => { currentIndex = (currentIndex + 1) % content.length; update(); };
         document.getElementById('prevBtn').onclick = () => { currentIndex = (currentIndex - 1 + content.length) % content.length; update(); };
         
