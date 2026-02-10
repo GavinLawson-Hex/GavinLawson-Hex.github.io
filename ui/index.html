@@ -318,28 +318,36 @@
 
         async function initApp() {
             const urlParams = new URLSearchParams(window.location.search);
-            const configUrl = urlParams.get('config');
+            let configUrl = urlParams.get('config');
 
             if (configUrl) {
+                // Prepend ./ if it's just a filename to help local servers resolve it
+                if (!configUrl.includes('/') && !configUrl.startsWith('.')) {
+                    configUrl = './' + configUrl;
+                }
+
                 try {
-                    // Create script element to load the JS file
                     await new Promise((resolve, reject) => {
                         const script = document.createElement('script');
                         script.src = configUrl;
-                        script.onload = resolve;
-                        script.onerror = reject;
+                        script.async = true;
+                        script.onload = () => {
+                            if (window.externalCarouselContent) {
+                                content = window.externalCarouselContent;
+                                resolve();
+                            } else {
+                                reject(new Error("window.externalCarouselContent not found in script"));
+                            }
+                        };
+                        script.onerror = () => reject(new Error("Failed to load script: " + configUrl));
                         document.head.appendChild(script);
                     });
-                    
-                    // The external file must define window.externalCarouselContent
-                    if (window.externalCarouselContent) {
-                        content = window.externalCarouselContent;
-                    }
                 } catch (e) {
-                    console.error("External config error:", e);
+                    console.error("External config error:", e.message);
+                    // Use defaults if loading fails
+                    content = defaultContent;
                 }
             }
-            // Once content is ready, build the UI
             renderCarousel();
         }
 
@@ -352,7 +360,6 @@
         let autoScrollInterval = null;
 
         function renderCarousel() {
-            // Clear existing content
             track.innerHTML = '';
             dotsContainer.innerHTML = '';
 
@@ -392,13 +399,11 @@
             document.querySelectorAll('.dot').forEach((d, i) => d.classList.toggle('active', i === currentIndex));
         }
 
-        // Settings Menu
         const gearBtn = document.getElementById('gearBtn');
         const settingsMenu = document.getElementById('settingsMenu');
         gearBtn.addEventListener('click', (e) => { e.stopPropagation(); settingsMenu.classList.toggle('active'); });
         document.addEventListener('click', () => settingsMenu.classList.remove('active'));
 
-        // Theme Toggle
         const themeToggle = document.getElementById('themeToggle');
         const themeIcon = document.getElementById('themeIcon');
         const themeBtnText = document.getElementById('themeBtnText');
@@ -413,7 +418,6 @@
                 : '<circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>';
         });
 
-        // Other Toggles
         document.getElementById('layoutToggle').addEventListener('click', () => {
             const main = document.getElementById('mainContainer');
             main.classList.toggle('masonry-view');
@@ -433,9 +437,7 @@
         document.getElementById('nextBtn').addEventListener('click', () => { currentIndex = (currentIndex + 1) % content.length; update(); });
         document.getElementById('prevBtn').addEventListener('click', () => { currentIndex = (currentIndex - 1 + content.length) % content.length; update(); });
 
-        // Kick off app initialization
         initApp();
     </script>
-
 </body>
 </html>
