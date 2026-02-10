@@ -305,9 +305,45 @@
         
         <div class="dots-container" id="dotsContainer"></div>
     </div>
-<!-- <script src="cards01.js"></script> -->
+
     <script>  
-        /* --- DO NOT CHANGE ANYTHING BELOW THIS LINE UNLESS YOU ARE A CODER --- */
+        /* --- APP CONFIGURATION AND LOADING --- */
+
+        const defaultContent = [
+            { type: 'image', src: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&fit=crop', text: 'Majestic mountain ranges.' },
+            { type: 'youtube', src: 'https://www.youtube.com/embed/kVxTrhojpFI', text: 'Swiss Alps Video.' }
+        ];
+
+        let content = defaultContent;
+
+        async function initApp() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const configUrl = urlParams.get('config');
+
+            if (configUrl) {
+                try {
+                    // Create script element to load the JS file
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = configUrl;
+                        script.onload = resolve;
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                    });
+                    
+                    // The external file must define window.externalCarouselContent
+                    if (window.externalCarouselContent) {
+                        content = window.externalCarouselContent;
+                    }
+                } catch (e) {
+                    console.error("External config error:", e);
+                }
+            }
+            // Once content is ready, build the UI
+            renderCarousel();
+        }
+
+        /* --- UI RENDER LOGIC --- */
 
         const track = document.getElementById('carouselTrack');
         const dotsContainer = document.getElementById('dotsContainer');
@@ -315,35 +351,41 @@
         let isAutoScrolling = false;
         let autoScrollInterval = null;
 
-        // Init
-        content.forEach((item, i) => {
-            const card = document.createElement('div');
-            card.className = 'card';
-            
-            let mediaHtml = '';
-            if (item.type === 'youtube') {
-                mediaHtml = `
-                    <div class="card-media-wrapper">
-                        <iframe class="card-media" src="${item.src}?rel=0&modestbranding=1" 
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                            allowfullscreen>
-                        </iframe>
-                    </div>`;
-            } else {
-                mediaHtml = `
-                    <div class="card-media-wrapper">
-                        <img src="${item.src}" class="card-media" alt="Travel Image" onerror="this.src='https://via.placeholder.com/800x400?text=Image+Unavailable'">
-                    </div>`;
-            }
+        function renderCarousel() {
+            // Clear existing content
+            track.innerHTML = '';
+            dotsContainer.innerHTML = '';
 
-            card.innerHTML = `${mediaHtml}<p class="card-text">${item.text}</p>`;
-            track.appendChild(card);
+            content.forEach((item, i) => {
+                const card = document.createElement('div');
+                card.className = 'card';
+                
+                let mediaHtml = '';
+                if (item.type === 'youtube') {
+                    mediaHtml = `
+                        <div class="card-media-wrapper">
+                            <iframe class="card-media" src="${item.src}?rel=0&modestbranding=1" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen>
+                            </iframe>
+                        </div>`;
+                } else {
+                    mediaHtml = `
+                        <div class="card-media-wrapper">
+                            <img src="${item.src}" class="card-media" alt="Travel Image" onerror="this.src='https://via.placeholder.com/800x400?text=Image+Unavailable'">
+                        </div>`;
+                }
 
-            const dot = document.createElement('button');
-            dot.className = `dot ${i === 0 ? 'active' : ''}`;
-            dot.addEventListener('click', () => { currentIndex = i; update(); });
-            dotsContainer.appendChild(dot);
-        });
+                card.innerHTML = `${mediaHtml}<p class="card-text">${item.text}</p>`;
+                track.appendChild(card);
+
+                const dot = document.createElement('button');
+                dot.className = `dot ${i === 0 ? 'active' : ''}`;
+                dot.addEventListener('click', () => { currentIndex = i; update(); });
+                dotsContainer.appendChild(dot);
+            });
+            update();
+        }
 
         function update() {
             track.style.transform = `translateX(-${currentIndex * 100}%)`;
@@ -390,6 +432,9 @@
 
         document.getElementById('nextBtn').addEventListener('click', () => { currentIndex = (currentIndex + 1) % content.length; update(); });
         document.getElementById('prevBtn').addEventListener('click', () => { currentIndex = (currentIndex - 1 + content.length) % content.length; update(); });
+
+        // Kick off app initialization
+        initApp();
     </script>
 
 </body>
