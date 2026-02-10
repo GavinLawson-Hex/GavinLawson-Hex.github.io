@@ -312,7 +312,8 @@
             { type: 'image', src: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=800&fit=crop', text: 'Pristine beaches with crystal clear turquoise waters.' },
             { type: 'youtube', src: 'https://www.youtube.com/embed/kVxTrhojpFI', text: 'Stunning aerial views of the Swiss Alps (YouTube).' },
             { type: 'image', src: 'https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&fit=crop', text: 'Futuristic city skylines glowing at twilight.' },
-            { type: 'image', src: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=800&fit=crop', text: 'Enchanted forests where light dances through trees.' }
+            { type: 'image', src: 'https://images.unsplash.com/photo-1511497584788-876760111969?w=800&fit=crop', text: 'Enchanted forests where light dances through trees.' },
+            { type: 'image', src: 'https://images.unsplash.com/photo-1483347756197-71ef80e95f73?w=800&fit=crop', text: 'The ethereal glow of the Northern Lights over icy horizons.' }
         ];
 
         const track = document.getElementById('carouselTrack');
@@ -338,7 +339,7 @@
             } else {
                 mediaHtml = `
                     <div class="card-media-wrapper">
-                        <img src="${item.src}" class="card-media" alt="Travel Image">
+                        <img src="${item.src}" class="card-media" alt="Travel Image" onerror="this.src='https://via.placeholder.com/800x400?text=Image+Unavailable'">
                     </div>`;
             }
 
