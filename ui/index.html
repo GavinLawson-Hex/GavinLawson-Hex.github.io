@@ -307,6 +307,33 @@
     </div>
 <!-- <script src="cards01.js"></script> -->
     <script>
+        async function initApp() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const configUrl = urlParams.get('config');
+
+            if (configUrl) {
+                try {
+                    // Create script element to load the JS file
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = configUrl;
+                        script.onload = resolve;
+                        script.onerror = reject;
+                        document.head.appendChild(script);
+                    });
+                    
+                    // The external file must define window.externalCarouselContent
+                    if (window.externalCarouselContent) {
+                        content = window.externalCarouselContent;
+                    }
+                } catch (e) {
+                    console.error("External config error:", e);
+                }
+            }
+            // Once we have our data, we build the visual cards
+            renderCarousel();
+        }
+
         
         /* --- DO NOT CHANGE ANYTHING BELOW THIS LINE UNLESS YOU ARE A CODER --- */
 
