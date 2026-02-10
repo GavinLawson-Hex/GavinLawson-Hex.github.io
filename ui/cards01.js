@@ -11,6 +11,7 @@
          * 2. The src must be an "embed" link (e.g., https://www.youtube.com/embed/VIDEO_ID)
          * -----------------------------------------------------------------
          */
+window.externalCarouselContent = [
         const content = [
             { 
                 type: 'image', 
@@ -43,3 +44,4 @@
                 text: 'The ethereal glow of the Northern Lights over icy horizons.' 
             }
         ];
+];
