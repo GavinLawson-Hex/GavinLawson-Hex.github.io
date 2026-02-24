@@ -124,6 +124,9 @@
 </div>
 
 <script>
+window.addEventListener('keydown', (e) => { if(e.key === 'Escape') window.parent.postMessage('exitGame', '*'); });
+   This ensures the game tells the launcher "Hey, the user wants to quit!"
+    
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
