@@ -124,7 +124,6 @@
 </div>
 
 <script>
-    
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
@@ -142,8 +141,15 @@
     // Game State
     let score = 0;
     let wave = 1;
-    let highScore = localStorage.getItem('galaga_high') || 20000;
+    let highScore = 20000;
     let nextExtraLifeScore = 10000; // Track 1UP threshold
+
+    // FIX: Wrap localStorage in a try/catch to prevent the browser from crashing the script
+    try {
+        highScore = localStorage.getItem('galaga_high') || 20000;
+    } catch (e) {
+        console.warn("Local storage blocked by browser security, using default high score.");
+    }
     highScoreEl.innerText = highScore;
     
     let gameActive = false;
@@ -432,6 +438,8 @@
 
     function initGame() {
         stars = Array.from({length: 50}, () => new Star());
+        bullets = []; // Reset arrays to prevent carryover on restart
+        explosions = []; 
         wave = 1;
         score = 0;
         nextExtraLifeScore = 10000; // Reset 1UP threshold
@@ -480,10 +488,11 @@
             }
         }
 
-        bullets.forEach((b, i) => {
-            b.y -= 4.5;
-            if (b.y < -10) bullets.splice(i, 1);
-        });
+        // Loop backwards for proper deletion
+        for (let i = bullets.length - 1; i >= 0; i--) {
+            bullets[i].y -= 4.5;
+            if (bullets[i].y < -10) bullets.splice(i, 1);
+        }
 
         stars.forEach(s => s.update());
         fleetX += enemyDirection * (0.4 + (wave * 0.05));
@@ -503,9 +512,14 @@
             if (enemyDirection === -1 && minX <= 8) enemyDirection = 1;
         }
 
-        enemies.forEach(e => {
+        // Fix: Better collision checking array logic 
+        for (let i = enemies.length - 1; i >= 0; i--) {
+            let e = enemies[i];
             e.update();
-            bullets.forEach((b, bi) => {
+            let enemyHit = false;
+
+            for (let bi = bullets.length - 1; bi >= 0; bi--) {
+                let b = bullets[bi];
                 if (b.x < e.x + e.width && b.x + b.w > e.x && b.y < e.y + e.height && b.y + b.h > e.y) {
                     spawnExplosion(e.x + e.width/2, e.y + e.height/2);
                     score += e.points;
@@ -516,23 +530,31 @@
                         nextExtraLifeScore += 10000;
                     }
                     
-                    enemies.splice(enemies.indexOf(e), 1);
                     bullets.splice(bi, 1);
+                    enemyHit = true;
+                    break;
                 }
-            });
+            }
+
+            if (enemyHit) {
+                enemies.splice(i, 1);
+                continue; 
+            }
+
             if (player.visible && !player.invincibleTimer && e.x < player.x + player.width && e.x + e.width > player.x && e.y < player.y + player.height && e.y + e.height > player.y) {
                 playerHit();
             }
-        });
+        }
 
-        explosions.forEach((ex, i) => {
+        for (let i = explosions.length - 1; i >= 0; i--) {
+            let ex = explosions[i];
             if (ex.type === 'particle') {
                 ex.x += ex.vx;
                 ex.y += ex.vy;
             }
             ex.life--;
             if (ex.life <= 0) explosions.splice(i, 1);
-        });
+        }
 
         if (enemies.length === 0) {
             wave++;
@@ -577,7 +599,12 @@
         document.getElementById('msg').innerText = "MISSION FAILED";
         if (score > highScore) {
             highScore = score;
-            localStorage.setItem('galaga_high', highScore);
+            try {
+                // FIX: Guard the setItem too
+                localStorage.setItem('galaga_high', highScore);
+            } catch (e) {
+                console.warn("Could not save score due to local storage restrictions.");
+            }
             highScoreEl.innerText = highScore;
         }
     }
@@ -588,7 +615,14 @@
         requestAnimationFrame(loop);
     }
 
-    window.addEventListener('keydown', e => keys[e.code] = true);
+    window.addEventListener('keydown', e => {
+        keys[e.code] = true;
+        // Allows you to escape from the Arcade Home Screen seamlessly
+        if (e.key === 'Escape') {
+            window.parent.postMessage('exitGame', '*');
+        }
+    });
+    
     window.addEventListener('keyup', e => keys[e.code] = false);
     startBtn.addEventListener('click', initGame);
     loop();
