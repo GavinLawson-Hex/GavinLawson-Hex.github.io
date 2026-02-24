@@ -187,14 +187,14 @@
 
         <div id="start-screen">
             <h1>PACMAN</h1>
-            <p style="color: #ccc; margin-bottom: 30px; font-family: 'Courier New'; text-align: center;">SPACE, ARROWS or SWIPE</p>
-            <button id="start-btn">INSERT COIN</button>
+            <p style="color: #ccc; margin-bottom: 30px; font-family: 'Courier New'; text-align: center;">ENTER TO START | ARROWS TO MOVE</p>
+            <button id="start-btn">PRESS ENTER TO START</button>
         </div>
 
         <div id="game-over-screen" class="hidden">
             <h1 id="game-over-title" style="color: red;">GAME OVER</h1>
             <p id="final-score" style="color: white; font-size: 24px; margin-bottom: 20px; font-family: 'Courier New';">Score: 0</p>
-            <button id="restart-btn">TRY AGAIN</button>
+            <button id="restart-btn">PRESS ENTER TO RETRY</button>
         </div>
     </div>
 
@@ -210,6 +210,11 @@
 /**
  * PACMAN GAME LOGIC
  */
+
+// Ensure the game frame grabs keyboard focus automatically when loaded in the Arcade Launcher
+window.addEventListener('load', () => {
+    window.focus();
+});
 
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
@@ -1085,7 +1090,15 @@ function animate() {
 
 // Controls
 window.addEventListener('keydown', (e) => {
-    if (e.code === 'Space') {
+    
+    // --- ADDED: Let the iframe communicate with the Launcher to Exit ---
+    if (e.key === 'Escape') {
+        window.parent.postMessage('exitGame', '*');
+        return;
+    }
+
+    // --- ADDED: Allow 'Enter' or 'Space' to start the game like in Arcades ---
+    if (e.code === 'Space' || e.code === 'Enter') {
         e.preventDefault();
         if (!gameActive) {
             if (!startScreen.classList.contains('hidden')) {
