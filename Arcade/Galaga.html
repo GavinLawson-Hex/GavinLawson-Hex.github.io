@@ -630,7 +630,7 @@
 
         // Allows you to escape from the Arcade Home Screen seamlessly
         if (e.key === 'Escape') {
-            window.parent.postMessage('exitGame', '*');
+            window.location.href = 'index.html';
         }
     });
     

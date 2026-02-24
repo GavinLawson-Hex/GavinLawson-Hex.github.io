@@ -1100,7 +1100,7 @@ window.addEventListener('keydown', (e) => {
     // Made bulletproof across all browsers by checking both key and code
     if (e.key === 'Escape' || e.code === 'Escape' || e.key === 'Esc') {
         e.preventDefault();
-        window.parent.postMessage('exitGame', '*');
+        window.location.href = 'index.html';
         return;
     }
 
