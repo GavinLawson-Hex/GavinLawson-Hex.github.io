@@ -216,6 +216,11 @@ window.addEventListener('load', () => {
     window.focus();
 });
 
+// Added to ensure the iframe never permanently loses keyboard focus if clicked
+document.addEventListener('click', () => {
+    window.focus();
+});
+
 const canvas = document.getElementById('gameCanvas');
 const ctx = canvas.getContext('2d');
 const scoreEl = document.getElementById('score-el');
@@ -1092,7 +1097,9 @@ function animate() {
 window.addEventListener('keydown', (e) => {
     
     // --- ADDED: Let the iframe communicate with the Launcher to Exit ---
-    if (e.key === 'Escape') {
+    // Made bulletproof across all browsers by checking both key and code
+    if (e.key === 'Escape' || e.code === 'Escape' || e.key === 'Esc') {
+        e.preventDefault();
         window.parent.postMessage('exitGame', '*');
         return;
     }
