@@ -74,8 +74,8 @@
             background: var(--arcade-red);
             color: white;
             border: none;
-            padding: 15px 40px;
-            font-size: 20px;
+            padding: 15px 30px;
+            font-size: 18px;
             font-family: inherit;
             cursor: pointer;
             margin-top: 20px;
@@ -117,13 +117,18 @@
         <h1 style="color: var(--arcade-yellow); margin: 0; font-size: 40px;">GALAGA</h1>
         <p style="color: var(--arcade-blue); letter-spacing: 2px;">REPLICA MISSION</p>
         <div id="msg" style="margin-top: 10px;">READY PLAYER ONE</div>
-        <button id="start-btn">START</button>
+        <button id="start-btn">PRESS ENTER TO START</button>
     </div>
 
     <div id="controls-hint">ARROWS: MOVE | SPACE: FIRE</div>
 </div>
 
 <script>
+    // Ensure the game frame grabs keyboard focus automatically when loaded in the Arcade Launcher
+    window.addEventListener('load', () => {
+        window.focus();
+    });
+
     const canvas = document.getElementById('gameCanvas');
     const ctx = canvas.getContext('2d');
     const scoreEl = document.getElementById('score');
@@ -617,6 +622,12 @@
 
     window.addEventListener('keydown', e => {
         keys[e.code] = true;
+        
+        // --- ADDED: Start game using keyboard (Arcade friendly) ---
+        if (!gameActive && (e.code === 'Enter' || e.code === 'Space')) {
+            initGame();
+        }
+
         // Allows you to escape from the Arcade Home Screen seamlessly
         if (e.key === 'Escape') {
             window.parent.postMessage('exitGame', '*');
@@ -624,7 +635,10 @@
     });
     
     window.addEventListener('keyup', e => keys[e.code] = false);
+    
+    // Kept for mouse users just in case
     startBtn.addEventListener('click', initGame);
+    
     loop();
 </script>
 </body>
