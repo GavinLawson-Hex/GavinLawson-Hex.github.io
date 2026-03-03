@@ -1,0 +1,1180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pacman Arcade</title>
+    <style>
+        body {
+            background-color: #111;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+            user-select: none;
+            touch-action: none; /* Prevents mobile scrolling while playing */
+        }
+
+        #game-container {
+            position: relative;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            border: 4px solid #222;
+            border-radius: 4px;
+            max-width: 100%; /* Responsive width */
+        }
+
+        canvas {
+            background-color: #000;
+            display: block;
+            max-width: 100%; /* Ensures canvas shrinks on mobile */
+            height: auto;
+        }
+
+        #ui-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 10px;
+            box-sizing: border-box;
+            font-family: 'Courier New', Courier, monospace;
+        }
+
+        .top-ui {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .bottom-ui {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            width: 100%;
+        }
+
+        .score-board {
+            font-size: 20px;
+            font-weight: bold;
+            text-shadow: 2px 2px 0 #000;
+            color: #fff;
+        }
+
+        .high-score {
+            color: #ffb8ae;
+        }
+
+        #start-screen, #game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            pointer-events: auto;
+            z-index: 10;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        h1 {
+            font-size: 56px;
+            color: #FFFF00;
+            margin-bottom: 10px;
+            text-shadow: 4px 4px 0 #b3b300;
+            letter-spacing: 4px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: 900;
+            text-align: center;
+        }
+
+        button {
+            padding: 15px 40px;
+            font-size: 20px;
+            background-color: #FFFF00;
+            color: #000;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 900;
+            font-family: 'Courier New', Courier, monospace;
+            transition: transform 0.1s, box-shadow 0.1s;
+            box-shadow: 0 4px 0 #b3b300;
+            text-transform: uppercase;
+        }
+
+        button:active {
+            transform: translateY(4px);
+            box-shadow: 0 0 0 #b3b300;
+        }
+
+        button:hover {
+            background-color: #ffff4d;
+        }
+
+        #mobile-controls {
+            display: none;
+            margin-top: 20px;
+            gap: 10px;
+        }
+
+        @media (max-width: 768px) {
+            h1 { font-size: 40px; }
+            #mobile-controls {
+                display: grid;
+                grid-template-columns: 60px 60px 60px;
+                grid-template-rows: 60px 60px;
+            }
+            .d-pad-btn {
+                width: 60px;
+                height: 60px;
+                background: rgba(255, 255, 255, 0.1);
+                border: 2px solid rgba(255, 255, 255, 0.3);
+                border-radius: 50%;
+                color: white;
+                font-size: 24px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                user-select: none;
+                cursor: pointer;
+                -webkit-tap-highlight-color: transparent;
+            }
+            .d-pad-btn:active {
+                background: rgba(255, 255, 255, 0.3);
+            }
+            .up { grid-column: 2; grid-row: 1; }
+            .left { grid-column: 1; grid-row: 2; }
+            .down { grid-column: 2; grid-row: 2; }
+            .right { grid-column: 3; grid-row: 2; }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="game-container">
+        <canvas id="gameCanvas"></canvas>
+        
+        <div id="ui-layer">
+            <div class="top-ui">
+                <div class="score-board">1UP<br><span id="score-el">0</span></div>
+                <div class="score-board high-score" style="text-align: center;">HIGH SCORE<br><span id="high-score-el">0</span></div>
+                <!-- Hidden text, we use icons at bottom -->
+                <div class="score-board" style="text-align: right; visibility: hidden;">LIVES<br><span id="lives-el">3</span></div>
+            </div>
+            <div class="bottom-ui">
+                <div id="lives-icons" style="display: flex; gap: 5px; padding-left: 5px; padding-bottom: 5px;">
+                    <!-- Icons injected here -->
+                </div>
+            </div>
+        </div>
+
+        <div id="start-screen">
+            <h1>PACMAN</h1>
+            <p style="color: #ccc; margin-bottom: 30px; font-family: 'Courier New'; text-align: center;">ENTER TO START | ARROWS TO MOVE</p>
+            <button id="start-btn">PRESS ENTER TO START</button>
+        </div>
+
+        <div id="game-over-screen" class="hidden">
+            <h1 id="game-over-title" style="color: red;">GAME OVER</h1>
+            <p id="final-score" style="color: white; font-size: 24px; margin-bottom: 20px; font-family: 'Courier New';">Score: 0</p>
+            <button id="restart-btn">PRESS ENTER TO RETRY</button>
+        </div>
+    </div>
+
+    <div id="mobile-controls">
+        <div class="d-pad-btn up" data-dir="up">▲</div>
+        <div class="d-pad-btn left" data-dir="left">◀</div>
+        <div class="d-pad-btn down" data-dir="down">▼</div>
+        <div class="d-pad-btn right" data-dir="right">▶</div>
+    </div>
+
+<script>
+    
+/**
+ * PACMAN GAME LOGIC
+ */
+
+// Ensure the game frame grabs keyboard focus automatically when loaded in the Arcade Launcher
+window.addEventListener('load', () => {
+    window.focus();
+});
+
+// Added to ensure the iframe never permanently loses keyboard focus if clicked
+document.addEventListener('click', () => {
+    window.focus();
+});
+
+const canvas = document.getElementById('gameCanvas');
+const ctx = canvas.getContext('2d');
+const scoreEl = document.getElementById('score-el');
+const highScoreEl = document.getElementById('high-score-el');
+const livesEl = document.getElementById('lives-el');
+const startScreen = document.getElementById('start-screen');
+const gameOverScreen = document.getElementById('game-over-screen');
+const gameOverTitle = document.getElementById('game-over-title');
+const finalScoreEl = document.getElementById('final-score');
+const startBtn = document.getElementById('start-btn');
+const restartBtn = document.getElementById('restart-btn');
+
+// --- AUDIO SYSTEM ---
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+let audioCtx;
+
+const soundManager = {
+    init: function() {
+        if (!audioCtx) audioCtx = new AudioContext();
+        if (audioCtx.state === 'suspended') audioCtx.resume();
+    },
+    playTone: function(freq, type, duration, vol = 0.1) {
+        if (!audioCtx) return;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = type;
+        osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+        gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+        osc.start();
+        osc.stop(audioCtx.currentTime + duration);
+    },
+    waka: function() {
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'triangle';
+        osc.frequency.setValueAtTime(300, now);
+        osc.frequency.linearRampToValueAtTime(100, now + 0.1);
+        gain.gain.setValueAtTime(0.1, now);
+        gain.gain.linearRampToValueAtTime(0, now + 0.1);
+        osc.start(now);
+        osc.stop(now + 0.15);
+    },
+    eatGhost: function() {
+        this.playTone(800, 'square', 0.1, 0.2);
+        setTimeout(() => this.playTone(1200, 'square', 0.2, 0.2), 100);
+    },
+    eatFruit: function() {
+        this.playTone(600, 'sine', 0.1, 0.2);
+        setTimeout(() => this.playTone(900, 'sine', 0.2, 0.2), 100);
+    },
+    die: function() {
+        if (!audioCtx) return;
+        const now = audioCtx.currentTime;
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(500, now);
+        osc.frequency.exponentialRampToValueAtTime(50, now + 1);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.linearRampToValueAtTime(0, now + 1);
+        osc.start(now);
+        osc.stop(now + 1);
+    },
+    startMusic: function() {
+        if (!audioCtx) return;
+        const notes = [261, 523, 392, 329, 261, 523, 392, 329];
+        notes.forEach((freq, i) => {
+            setTimeout(() => this.playTone(freq, 'square', 0.1, 0.1), i * 150);
+        });
+    }
+};
+
+// --- GAME CONSTANTS ---
+const TILE_SIZE = 24;
+const PACMAN_SPEED = 2; 
+const GHOST_SPEED = 1.5; 
+const GHOST_FRIGHTENED_SPEED = 1;
+
+const UP = { x: 0, y: -1, id: 'UP' };
+const DOWN = { x: 0, y: 1, id: 'DOWN' };
+const LEFT = { x: -1, y: 0, id: 'LEFT' };
+const RIGHT = { x: 1, y: 0, id: 'RIGHT' };
+const STOP = { x: 0, y: 0, id: 'STOP' };
+
+// Map Codes: 0=Empty, 1=Wall, 2=Dot, 3=PowerPellet, 4=GhostHouse, 5=FruitSpawn
+const rawMap = [
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1],
+    [1,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,1],
+    [1,2,1,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,2,1],
+    [1,3,1,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,3,1],
+    [1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1],
+    [1,2,1,1,1,2,1,2,1,1,1,1,1,2,1,2,1,1,1,2,1],
+    [1,2,2,2,2,2,1,2,2,2,5,2,2,2,1,2,2,2,2,2,1],
+    [1,1,1,1,1,2,1,1,1,0,1,0,1,1,1,2,1,1,1,1,1],
+    [0,0,0,0,1,2,1,0,0,0,0,0,0,0,1,2,1,0,0,0,0], // Tunnel
+    [1,1,1,1,1,2,1,0,1,1,4,1,1,0,1,2,1,1,1,1,1],
+    [0,2,2,2,2,2,0,0,1,4,4,4,1,0,0,2,2,2,2,2,0], 
+    [1,1,1,1,1,2,1,0,1,1,1,1,1,0,1,2,1,1,1,1,1],
+    [0,0,0,0,1,2,1,0,0,0,0,0,0,0,1,2,1,0,0,0,0], // Tunnel
+    [1,1,1,1,1,2,1,2,1,1,1,1,1,2,1,2,1,1,1,1,1],
+    [1,2,2,2,2,2,2,2,2,2,1,2,2,2,2,2,2,2,2,2,1],
+    [1,2,1,1,1,2,1,1,1,2,1,2,1,1,1,2,1,1,1,2,1],
+    [1,3,2,2,1,2,2,2,2,2,0,2,2,2,2,2,1,2,2,3,1],
+    [1,1,1,2,1,2,1,2,1,1,1,1,1,2,1,2,1,2,1,1,1],
+    [1,2,2,2,2,2,1,2,2,2,1,2,2,2,1,2,2,2,2,2,1],
+    [1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1]
+];
+
+// --- VARIABLES ---
+let map = [];
+let score = 0;
+let highScore = 0;
+try {
+    highScore = localStorage.getItem('pacman_highscore') || 0;
+} catch(e) { console.warn('LocalStorage not available'); }
+
+let lives = 3;
+let gameActive = false;
+let animationId;
+let deathAnimId; // Track interval to clear it safely
+let dotsRemaining = 0;
+let ghostCombo = 0; 
+let readyTimer = 0; 
+let dyingTimer = 0; 
+let fruitActive = false;
+let effects = []; 
+
+// Entities
+let pacman;
+let ghosts = [];
+
+// Setup Canvas
+const COLS = rawMap[0].length;
+const ROWS = rawMap.length;
+canvas.width = COLS * TILE_SIZE;
+canvas.height = ROWS * TILE_SIZE;
+highScoreEl.innerText = highScore;
+
+// --- SHARED PHYSICS / COLLISION LOGIC ---
+
+/**
+ * Checks if a tile is a wall.
+ * @param {number} tX - Tile X
+ * @param {number} tY - Tile Y
+ * @param {object} dir - Direction object
+ * @param {boolean} isPacman - If true, treats Ghost House (4) as wall
+ */
+function isWall(tX, tY, dir, isPacman = false) {
+    let nX = tX + dir.x;
+    let nY = tY + dir.y;
+    
+    // Tunnel logic (out of bounds is NOT a wall usually, but check bounds for safety)
+    if (nX < 0) nX = COLS - 1;
+    if (nX >= COLS) nX = 0;
+    
+    // Hard boundary check (top/bottom)
+    if (nY < 0 || nY >= ROWS) return true;
+
+    const tile = map[nY][nX];
+    
+    // 1 is always wall
+    if (tile === 1) return true;
+
+    // 4 is Ghost House - Wall for Pacman, but Walkable for Ghosts
+    if (isPacman && tile === 4) return true;
+
+    return false;
+}
+
+function getNeighbors(node) {
+    const dirs = [UP, DOWN, LEFT, RIGHT];
+    const neighbors = [];
+    dirs.forEach(dir => {
+        // Ghosts call this, so isPacman = false (can enter/leave house)
+        if (!isWall(node.x, node.y, dir, false)) {
+            let nx = node.x + dir.x;
+            let ny = node.y + dir.y;
+            if (nx < 0) nx = COLS - 1;
+            if (nx >= COLS) nx = 0;
+            neighbors.push({ x: nx, y: ny, dir: dir });
+        }
+    });
+    return neighbors;
+}
+
+function getAStarDirection(startX, startY, targetX, targetY, currentDir) {
+    let openSet = [];
+    let closedSet = new Set();
+    
+    openSet.push({ 
+        x: startX, 
+        y: startY, 
+        g: 0, 
+        h: Math.abs(targetX - startX) + Math.abs(targetY - startY),
+        parent: null,
+        firstDir: null
+    });
+
+    while (openSet.length > 0) {
+        openSet.sort((a, b) => (a.g + a.h) - (b.g + b.h));
+        let current = openSet.shift(); 
+        
+        if (current.x === targetX && current.y === targetY && current.parent !== null) {
+            return current.firstDir;
+        }
+
+        let key = `${current.x},${current.y}`;
+        if (closedSet.has(key)) continue;
+        closedSet.add(key);
+
+        let neighbors = getNeighbors(current);
+        for (let neighbor of neighbors) {
+            if (closedSet.has(`${neighbor.x},${neighbor.y}`)) continue;
+            
+            // STRICT GHOST RULE: No immediate 180 turn
+            if (current.parent === null && currentDir) {
+                if (neighbor.dir.x === -currentDir.x && neighbor.dir.y === -currentDir.y) {
+                    continue;
+                }
+            }
+
+            let gScore = current.g + 1;
+            openSet.push({
+                x: neighbor.x,
+                y: neighbor.y,
+                g: gScore,
+                h: Math.abs(targetX - neighbor.x) + Math.abs(targetY - neighbor.y),
+                parent: current,
+                firstDir: current.parent === null ? neighbor.dir : current.firstDir
+            });
+        }
+    }
+    
+    // Fallback
+    let validMoves = getNeighbors({x: startX, y: startY});
+    let forwardMoves = validMoves.filter(n => !(currentDir && n.dir.x === -currentDir.x && n.dir.y === -currentDir.y));
+    
+    if (forwardMoves.length > 0) {
+        return forwardMoves[Math.floor(Math.random() * forwardMoves.length)].dir;
+    } else if (validMoves.length > 0) {
+        return validMoves[0].dir;
+    }
+
+    return currentDir;
+}
+
+// --- CLASSES ---
+
+class FloatingText {
+    constructor(x, y, text, color) {
+        this.x = x;
+        this.y = y;
+        this.text = text;
+        this.color = color;
+        this.life = 60; 
+        this.dy = -0.5;
+    }
+    update() { this.y += this.dy; this.life--; }
+    draw() {
+        ctx.fillStyle = this.color;
+        ctx.font = 'bold 14px "Courier New"';
+        ctx.textAlign = 'center';
+        ctx.fillText(this.text, this.x, this.y);
+    }
+}
+
+class Pacman {
+    constructor(x, y) {
+        this.startX = x;
+        this.startY = y;
+        this.reset();
+        this.mouthOpen = 0.2;
+        this.mouthSpeed = 0.1;
+        this.mouthDir = 1;
+        this.wakaTimer = 0;
+    }
+
+    reset() {
+        this.x = this.startX * TILE_SIZE + TILE_SIZE / 2;
+        this.y = this.startY * TILE_SIZE + TILE_SIZE / 2;
+        this.currentDir = STOP;
+        this.nextDir = STOP;
+        this.rotation = 0;
+        this.mouthOpen = 0.2;
+    }
+
+    getTile() {
+        let tX = Math.floor(this.x / TILE_SIZE);
+        if (tX < 0) tX = COLS - 1;
+        if (tX >= COLS) tX = 0;
+        return { x: tX, y: Math.floor(this.y / TILE_SIZE) };
+    }
+
+    update() {
+        if (dyingTimer > 0) return;
+
+        // Sound
+        if (this.currentDir !== STOP) {
+            this.wakaTimer++;
+            if (this.wakaTimer > 15) { soundManager.waka(); this.wakaTimer = 0; }
+        }
+
+        this.mouthOpen += this.mouthSpeed * this.mouthDir;
+        if (this.mouthOpen > 0.25 || this.mouthOpen < 0.02) this.mouthDir *= -1;
+
+        // 1. INPUT HANDLING & CORNERING LOGIC
+        if (this.nextDir !== STOP && this.nextDir !== this.currentDir) {
+            // Case A: Instant Reverse (Always allowed)
+            if (this.currentDir !== STOP && 
+                this.nextDir.x === -this.currentDir.x && 
+                this.nextDir.y === -this.currentDir.y) {
+                this.currentDir = this.nextDir;
+                this.nextDir = STOP;
+                this.updateRotation();
+            }
+            // Case B: Turning (Cornering Forgiveness)
+            else {
+                // Find the center of the nearest tile
+                let tX = Math.round((this.x - TILE_SIZE/2) / TILE_SIZE);
+                let tY = Math.round((this.y - TILE_SIZE/2) / TILE_SIZE);
+                let centerX = tX * TILE_SIZE + TILE_SIZE / 2;
+                let centerY = tY * TILE_SIZE + TILE_SIZE / 2;
+                
+                // Distance to that center
+                let dist = Math.hypot(this.x - centerX, this.y - centerY);
+                
+                // If we are close enough (5px forgiveness), try to snap and turn
+                if (dist < 5) {
+                    if (!isWall(tX, tY, this.nextDir, true)) {
+                        this.x = centerX;
+                        this.y = centerY;
+                        this.currentDir = this.nextDir;
+                        this.nextDir = STOP;
+                        this.updateRotation();
+                    }
+                }
+            }
+        }
+
+        // 2. MOVEMENT
+        let prevX = this.x;
+        let prevY = this.y;
+
+        this.x += this.currentDir.x * PACMAN_SPEED;
+        this.y += this.currentDir.y * PACMAN_SPEED;
+
+        // Seamless Tunnel Wrap
+        if (this.x < 0) { this.x += canvas.width; prevX += canvas.width; }
+        if (this.x >= canvas.width) { this.x -= canvas.width; prevX -= canvas.width; }
+
+        // 3. WALL COLLISION (Stop at center)
+        // Check if we passed the center of the tile we are moving INTO or OUT of
+        let centerOfTileX = Math.floor(prevX / TILE_SIZE) * TILE_SIZE + TILE_SIZE/2;
+        let centerOfTileY = Math.floor(prevY / TILE_SIZE) * TILE_SIZE + TILE_SIZE/2;
+        
+        let passed = false;
+        if (this.currentDir === RIGHT && prevX < centerOfTileX && this.x >= centerOfTileX) passed = true;
+        if (this.currentDir === LEFT && prevX > centerOfTileX && this.x <= centerOfTileX) passed = true;
+        if (this.currentDir === DOWN && prevY < centerOfTileY && this.y >= centerOfTileY) passed = true;
+        if (this.currentDir === UP && prevY > centerOfTileY && this.y <= centerOfTileY) passed = true;
+
+        if (passed) {
+            // Snap to exact center to keep grid alignment perfect
+            this.x = centerOfTileX;
+            this.y = centerOfTileY;
+            
+            let gridX = Math.floor(this.x / TILE_SIZE);
+            let gridY = Math.floor(this.y / TILE_SIZE);
+            
+            // Try to execute buffered turn exactly at center (Perfect Timing)
+            if (this.nextDir !== STOP && !isWall(gridX, gridY, this.nextDir, true)) {
+                this.currentDir = this.nextDir;
+                this.nextDir = STOP;
+                this.updateRotation();
+            } else {
+                // If no valid turn, check if we hit a wall straight ahead
+                if (isWall(gridX, gridY, this.currentDir, true)) {
+                    this.currentDir = STOP;
+                }
+            }
+        }
+    }
+
+    updateRotation() {
+        if (this.currentDir === RIGHT) this.rotation = 0;
+        if (this.currentDir === DOWN) this.rotation = Math.PI / 2;
+        if (this.currentDir === LEFT) this.rotation = Math.PI;
+        if (this.currentDir === UP) this.rotation = -Math.PI / 2;
+    }
+
+    draw() {
+        ctx.save();
+        ctx.translate(this.x, this.y);
+        
+        if (dyingTimer > 0) {
+            let scale = Math.max(0, 1 - (dyingTimer / 60)); 
+            ctx.rotate(dyingTimer * 0.2);
+            ctx.scale(scale, scale);
+            ctx.beginPath();
+            ctx.arc(0, 0, TILE_SIZE / 2 - 2, 0, Math.PI * 2);
+            ctx.fillStyle = '#FFFF00';
+            ctx.fill();
+        } else {
+            ctx.rotate(this.rotation);
+            ctx.beginPath();
+            ctx.arc(0, 0, TILE_SIZE / 2 - 2, this.mouthOpen * Math.PI, (2 - this.mouthOpen) * Math.PI);
+            ctx.lineTo(0, 0);
+            ctx.fillStyle = '#FFFF00';
+            ctx.fill();
+        }
+        ctx.restore();
+    }
+}
+
+class Ghost {
+    constructor(x, y, color, id) {
+        this.startX = x;
+        this.startY = y;
+        this.color = color;
+        this.id = id; 
+        this.spawnTimer = 0; // Timer to wait in house
+        this.reset();
+    }
+
+    reset() {
+        this.x = this.startX * TILE_SIZE + TILE_SIZE / 2;
+        this.y = this.startY * TILE_SIZE + TILE_SIZE / 2;
+        this.currentDir = Math.random() > 0.5 ? LEFT : RIGHT;
+        this.speed = GHOST_SPEED;
+        this.frightened = false;
+        this.frightenedTimer = 0;
+        this.spawnTimer = 0;
+    }
+
+    respawn() {
+        this.reset();
+        this.spawnTimer = 180; // 3 seconds penalty before moving
+    }
+
+    update() {
+        // If spawning, do not move
+        if (this.spawnTimer > 0) {
+            this.spawnTimer--;
+            return;
+        }
+
+        if (this.frightened) {
+            this.frightenedTimer--;
+            if (this.frightenedTimer <= 0) {
+                this.frightened = false;
+                this.speed = GHOST_SPEED;
+                ghostCombo = 0; 
+            }
+        }
+
+        let prevX = this.x;
+        let prevY = this.y;
+
+        this.x += this.currentDir.x * this.speed;
+        this.y += this.currentDir.y * this.speed;
+
+        // Seamless Tunnel wrap
+        if (this.x < 0) { this.x += canvas.width; prevX += canvas.width; }
+        if (this.x >= canvas.width) { this.x -= canvas.width; prevX -= canvas.width; }
+
+        let currentTX = Math.floor(prevX / TILE_SIZE);
+        let currentTY = Math.floor(prevY / TILE_SIZE);
+        let centerX = currentTX * TILE_SIZE + TILE_SIZE / 2;
+        let centerY = currentTY * TILE_SIZE + TILE_SIZE / 2;
+
+        let passedCenter = false;
+        if (this.currentDir === RIGHT && prevX < centerX && this.x >= centerX) passedCenter = true;
+        if (this.currentDir === LEFT && prevX > centerX && this.x <= centerX) passedCenter = true;
+        if (this.currentDir === DOWN && prevY < centerY && this.y >= centerY) passedCenter = true;
+        if (this.currentDir === UP && prevY > centerY && this.y <= centerY) passedCenter = true;
+
+        if (passedCenter) {
+            this.x = centerX;
+            this.y = centerY;
+
+            let logicalTX = currentTX;
+            if (logicalTX < 0) logicalTX = COLS - 1;
+            if (logicalTX >= COLS) logicalTX = 0;
+
+            let validMoves = getNeighbors({x: logicalTX, y: currentTY});
+            
+            // AI LOGIC
+            let pTile = pacman.getTile();
+            let target = { x: pTile.x, y: pTile.y }; 
+
+            if (this.frightened) {
+                // Random Valid Move
+                let valid = validMoves.filter(n => !(n.dir.x === -this.currentDir.x && n.dir.y === -this.currentDir.y));
+                if (valid.length > 0) this.currentDir = valid[Math.floor(Math.random() * valid.length)].dir;
+                else if (validMoves.length > 0) this.currentDir = validMoves[0].dir;
+            } else {
+                // PERSONALITIES
+                if (this.id === 1) { // Pinky: 4 tiles ahead
+                    target.x += pacman.currentDir.x * 4;
+                    target.y += pacman.currentDir.y * 4;
+                } else if (this.id === 2) { // Inky: Ambush vector
+                     let blinky = ghosts[0];
+                     let bTX = Math.floor(blinky.x / TILE_SIZE);
+                     let bTY = Math.floor(blinky.y / TILE_SIZE);
+                     let pFrontX = pTile.x + pacman.currentDir.x * 2;
+                     let pFrontY = pTile.y + pacman.currentDir.y * 2;
+                     target.x = bTX + (pFrontX - bTX) * 2;
+                     target.y = bTY + (pFrontY - bTY) * 2;
+                } else if (this.id === 3) { // Clyde: Chase but retreat if close
+                    let dist = Math.hypot(logicalTX - pTile.x, currentTY - pTile.y);
+                    if (dist < 8) { target.x = 0; target.y = ROWS-1; }
+                }
+
+                this.currentDir = getAStarDirection(logicalTX, currentTY, Math.floor(target.x), Math.floor(target.y), this.currentDir);
+
+                // Stop ghost from phasing through walls if A* fallback acts up
+                if (isWall(logicalTX, currentTY, this.currentDir, false)) {
+                    let forwardMoves = validMoves.filter(n => !(n.dir.x === -this.currentDir.x && n.dir.y === -this.currentDir.y));
+                    if (forwardMoves.length > 0) this.currentDir = forwardMoves[0].dir;
+                    else if (validMoves.length > 0) this.currentDir = validMoves[0].dir;
+                }
+            }
+        }
+    }
+    
+    makeFrightened() {
+        this.frightened = true;
+        this.frightenedTimer = 400; 
+        this.speed = GHOST_FRIGHTENED_SPEED;
+        
+        // Use the constants UP/DOWN/LEFT/RIGHT to reverse direction
+        // instead of creating a new object. This ensures the physics
+        // engine recognizes the direction for center alignment.
+        if (this.currentDir === LEFT) this.currentDir = RIGHT;
+        else if (this.currentDir === RIGHT) this.currentDir = LEFT;
+        else if (this.currentDir === UP) this.currentDir = DOWN;
+        else if (this.currentDir === DOWN) this.currentDir = UP;
+    }
+
+    draw() {
+        if (this.spawnTimer > 0) {
+            ctx.globalAlpha = 0.5;
+        }
+
+        ctx.fillStyle = this.frightened ? '#0000FF' : this.color;
+        
+        if (this.frightened && this.frightenedTimer < 100 && Math.floor(Date.now() / 150) % 2 === 0) {
+            ctx.fillStyle = '#FFFFFF';
+        }
+
+        ctx.beginPath();
+        let r = TILE_SIZE / 2 - 2;
+        ctx.arc(this.x, this.y - 2, r, Math.PI, 0);
+        ctx.lineTo(this.x + r, this.y + r);
+        for(let i=1; i<=3; i++) {
+             ctx.lineTo(this.x + r - (2*r/3)*i, this.y + r - (i%2==0 ? 3 : 0));
+        }
+        ctx.lineTo(this.x - r, this.y + r);
+        ctx.fill();
+        ctx.closePath();
+
+        if (!this.frightened) {
+            let eyeOffsetX = this.currentDir.x * 2;
+            let eyeOffsetY = this.currentDir.y * 2;
+
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(this.x - 4 + eyeOffsetX, this.y - 4 + eyeOffsetY, 3.5, 0, Math.PI * 2);
+            ctx.arc(this.x + 4 + eyeOffsetX, this.y - 4 + eyeOffsetY, 3.5, 0, Math.PI * 2);
+            ctx.fill();
+            
+            ctx.fillStyle = 'blue';
+            ctx.beginPath();
+            ctx.arc(this.x - 4 + eyeOffsetX*1.5, this.y - 4 + eyeOffsetY*1.5, 1.5, 0, Math.PI * 2);
+            ctx.arc(this.x + 4 + eyeOffsetX*1.5, this.y - 4 + eyeOffsetY*1.5, 1.5, 0, Math.PI * 2);
+            ctx.fill();
+        } else {
+            ctx.fillStyle = '#ffb8ae';
+            ctx.fillRect(this.x - 5, this.y, 2, 2);
+            ctx.fillRect(this.x - 1, this.y - 2, 2, 2);
+            ctx.fillRect(this.x + 3, this.y, 2, 2);
+        }
+
+        if (this.spawnTimer > 0) {
+            ctx.globalAlpha = 1.0;
+        }
+    }
+}
+
+// --- MAIN FUNCTIONS ---
+
+function updateLivesDisplay() {
+    livesEl.innerText = lives; 
+    const iconsContainer = document.getElementById('lives-icons');
+    if (!iconsContainer) return;
+    
+    iconsContainer.innerHTML = '';
+    
+    // Draw visual icons for remaining extra lives (excluding current life)
+    for (let i = 0; i < lives - 1; i++) {
+        let canvasIcon = document.createElement('canvas');
+        canvasIcon.width = 24;
+        canvasIcon.height = 24;
+        let ctxIcon = canvasIcon.getContext('2d');
+        ctxIcon.beginPath();
+        ctxIcon.arc(12, 12, 10, 0.2 * Math.PI, 1.8 * Math.PI);
+        ctxIcon.lineTo(12, 12);
+        ctxIcon.fillStyle = '#FFFF00';
+        ctxIcon.fill();
+        iconsContainer.appendChild(canvasIcon);
+    }
+}
+
+function initGame() {
+    if (deathAnimId) clearInterval(deathAnimId); // Safety clear
+    
+    soundManager.init();
+    map = rawMap.map(row => [...row]);
+    score = 0;
+    lives = 3;
+    dotsRemaining = 0;
+    fruitActive = false;
+    effects = [];
+
+    for(let r=0; r<ROWS; r++) {
+        for(let c=0; c<COLS; c++) {
+            if(map[r][c] === 2 || map[r][c] === 3) dotsRemaining++;
+        }
+    }
+
+    scoreEl.innerText = score;
+    updateLivesDisplay();
+
+    // Entities
+    pacman = new Pacman(10, 16); 
+    ghosts = [
+        new Ghost(9, 8, '#FF0000', 0), // Blinky
+        new Ghost(10, 8, '#FFB8FF', 1), // Pinky
+        new Ghost(11, 8, '#00FFFF', 2), // Inky
+        new Ghost(10, 9, '#FFB852', 3)  // Clyde
+    ];
+
+    // Staggered Start: Blinky starts (0), Pinky (1s), Inky (2s), Clyde (3s)
+    ghosts[1].spawnTimer = 60;
+    ghosts[2].spawnTimer = 120;
+    ghosts[3].spawnTimer = 180;
+
+    readyTimer = 120; // 2 seconds "READY"
+    soundManager.startMusic();
+    gameActive = true;
+    animate();
+}
+
+function resetPositions() {
+    pacman.reset();
+    ghosts.forEach(g => g.reset());
+    
+    // Staggered Start on reset
+    ghosts[1].spawnTimer = 60;
+    ghosts[2].spawnTimer = 120;
+    ghosts[3].spawnTimer = 180;
+
+    readyTimer = 60; // Short ready
+}
+
+function handleDeath() {
+    // Prevent recursive calls or overlapping death sequences
+    if (dyingTimer > 0) return;
+    
+    dyingTimer = 1; // Block update loop immediately
+    lives--;
+    updateLivesDisplay();
+    soundManager.die();
+    
+    if (deathAnimId) clearInterval(deathAnimId);
+    
+    deathAnimId = setInterval(() => {
+        dyingTimer++;
+        if (dyingTimer > 60) {
+            clearInterval(deathAnimId);
+            dyingTimer = 0;
+            if (lives <= 0) {
+                gameOver();
+            } else {
+                resetPositions();
+            }
+        }
+    }, 16);
+}
+
+function gameOver() {
+    gameActive = false;
+    cancelAnimationFrame(animationId);
+    
+    if (score > highScore) {
+        highScore = score;
+        try {
+            localStorage.setItem('pacman_highscore', highScore);
+        } catch(e) {}
+        highScoreEl.innerText = highScore;
+    }
+
+    gameOverTitle.innerText = dotsRemaining === 0 ? "YOU WON!" : "GAME OVER";
+    gameOverTitle.style.color = dotsRemaining === 0 ? "#00FF00" : "red";
+    finalScoreEl.innerText = "Final Score: " + score;
+    gameOverScreen.classList.remove('hidden');
+}
+
+function spawnFruit() {
+    if (fruitActive) return;
+    fruitActive = true;
+    for(let r=0; r<ROWS; r++){
+        for(let c=0; c<COLS; c++){
+            if(rawMap[r][c] === 5) {
+                map[r][c] = 5; 
+            }
+        }
+    }
+    setTimeout(() => {
+        if(fruitActive) {
+            for(let r=0; r<ROWS; r++){
+                for(let c=0; c<COLS; c++){
+                    if(map[r][c] === 5) map[r][c] = 0;
+                }
+            }
+            fruitActive = false;
+        }
+    }, 10000);
+}
+
+function drawMap() {
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    ctx.strokeStyle = '#2121DE';
+    ctx.lineWidth = 2;
+    ctx.lineCap = 'round';
+
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            let tile = map[r][c];
+            let x = c * TILE_SIZE;
+            let y = r * TILE_SIZE;
+            let cx = x + TILE_SIZE/2;
+            let cy = y + TILE_SIZE/2;
+
+            if (tile === 1) {
+                ctx.strokeRect(x + 4, y + 4, TILE_SIZE - 8, TILE_SIZE - 8);
+            } else if (tile === 2) {
+                ctx.fillStyle = '#ffb8ae';
+                ctx.fillRect(cx - 1.5, cy - 1.5, 3, 3);
+            } else if (tile === 3) {
+                if (Math.floor(Date.now() / 150) % 2 === 0) {
+                    ctx.fillStyle = '#ffb8ae';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, 7, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            } else if (tile === 5) {
+                ctx.fillStyle = 'red';
+                ctx.beginPath(); ctx.arc(cx - 3, cy + 2, 4, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(cx + 3, cy + 4, 4, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = 'green'; ctx.beginPath(); ctx.moveTo(cx-3, cy+2); ctx.quadraticCurveTo(cx, cy-5, cx+2, cy-8); ctx.stroke();
+            }
+        }
+    }
+}
+
+function update() {
+    if (readyTimer > 0) {
+        readyTimer--;
+        return;
+    }
+    if (dyingTimer > 0) return;
+
+    pacman.update();
+
+    let tile = pacman.getTile();
+    if (tile.y >= 0 && tile.y < ROWS && tile.x >= 0 && tile.x < COLS) {
+        let type = map[tile.y][tile.x];
+        
+        if (type === 2) { 
+            map[tile.y][tile.x] = 0;
+            score += 10;
+            scoreEl.innerText = score;
+            dotsRemaining--;
+        } else if (type === 3) { 
+            map[tile.y][tile.x] = 0;
+            score += 50;
+            scoreEl.innerText = score;
+            dotsRemaining--;
+            ghosts.forEach(g => g.makeFrightened());
+            ghostCombo = 1;
+        } else if (type === 5) { 
+            map[tile.y][tile.x] = 0;
+            score += 100;
+            scoreEl.innerText = score;
+            soundManager.eatFruit();
+            effects.push(new FloatingText(pacman.x, pacman.y - 10, "100", "#FF00FF"));
+            fruitActive = false;
+        }
+    }
+
+    if (!fruitActive && dotsRemaining < 100 && Math.random() < 0.001) spawnFruit();
+
+    if (dotsRemaining === 0) {
+        gameOver();
+        return;
+    }
+
+    for (let g of ghosts) {
+        g.update();
+        let dist = Math.hypot(pacman.x - g.x, pacman.y - g.y);
+        
+        if (dist < TILE_SIZE - 4) {
+            if (g.frightened) {
+                g.respawn(); // Changed from reset() to respawn()
+                soundManager.eatGhost();
+                let points = 200 * ghostCombo;
+                score += points;
+                ghostCombo *= 2;
+                scoreEl.innerText = score;
+                effects.push(new FloatingText(g.x, g.y, points.toString(), "#00FFFF"));
+            } else {
+                handleDeath();
+            }
+        }
+    }
+
+    effects.forEach((e, i) => {
+        e.update();
+        if (e.life <= 0) effects.splice(i, 1);
+    });
+}
+
+function animate() {
+    if (!gameActive) return;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    drawMap();
+    
+    effects.forEach(e => e.draw());
+
+    if (dyingTimer > 0) {
+        pacman.draw();
+    } else {
+        pacman.draw();
+        ghosts.forEach(g => g.draw());
+    }
+
+    if (readyTimer > 0) {
+        ctx.fillStyle = '#FFFF00';
+        ctx.font = 'bold 30px "Courier New"';
+        ctx.textAlign = 'center';
+        ctx.fillText('READY!', canvas.width/2, canvas.height/2 + 35);
+    }
+
+    update();
+
+    animationId = requestAnimationFrame(animate);
+}
+
+// Controls
+window.addEventListener('keydown', (e) => {
+    
+    // --- ADDED: Let the iframe communicate with the Launcher to Exit ---
+    // Made bulletproof across all browsers by checking both key and code
+    if (e.key === 'Escape' || e.code === 'Escape' || e.key === 'Esc') {
+        e.preventDefault();
+        window.location.href = 'index.html';
+        return;
+    }
+
+    // --- ADDED: Allow 'Enter' or 'Space' to start the game like in Arcades ---
+    if (e.code === 'Space' || e.code === 'Enter') {
+        e.preventDefault();
+        if (!gameActive) {
+            if (!startScreen.classList.contains('hidden')) {
+                startScreen.classList.add('hidden');
+                initGame();
+            } else if (!gameOverScreen.classList.contains('hidden')) {
+                gameOverScreen.classList.add('hidden');
+                initGame();
+            }
+        }
+        return;
+    }
+
+    if (!gameActive) return;
+    if (["ArrowUp","ArrowDown","ArrowLeft","ArrowRight"].indexOf(e.code) > -1) {
+        e.preventDefault();
+    }
+    switch(e.key) {
+        case 'ArrowUp': pacman.nextDir = UP; break;
+        case 'ArrowDown': pacman.nextDir = DOWN; break;
+        case 'ArrowLeft': pacman.nextDir = LEFT; break;
+        case 'ArrowRight': pacman.nextDir = RIGHT; break;
+    }
+});
+
+let touchStartX = 0;
+let touchStartY = 0;
+window.addEventListener('touchstart', e => {
+    touchStartX = e.changedTouches[0].screenX;
+    touchStartY = e.changedTouches[0].screenY;
+}, {passive: false});
+
+window.addEventListener('touchend', e => {
+    if (!gameActive) return;
+    let touchEndX = e.changedTouches[0].screenX;
+    let touchEndY = e.changedTouches[0].screenY;
+    let dx = touchEndX - touchStartX;
+    let dy = touchEndY - touchStartY;
+    if (Math.abs(dx) > Math.abs(dy)) {
+        pacman.nextDir = dx > 0 ? RIGHT : LEFT;
+    } else {
+        pacman.nextDir = dy > 0 ? DOWN : UP;
+    }
+}, {passive: false});
+
+startBtn.addEventListener('click', () => {
+    startScreen.classList.add('hidden');
+    initGame();
+});
+
+restartBtn.addEventListener('click', () => {
+    gameOverScreen.classList.add('hidden');
+    initGame();
+});
+
+document.querySelectorAll('.d-pad-btn').forEach(btn => {
+    const handleInput = (e) => {
+        e.preventDefault(); 
+        if (!gameActive) return;
+        const dir = btn.dataset.dir;
+        if (dir === 'up') pacman.nextDir = UP;
+        if (dir === 'down') pacman.nextDir = DOWN;
+        if (dir === 'left') pacman.nextDir = LEFT;
+        if (dir === 'right') pacman.nextDir = RIGHT;
+    };
+    btn.addEventListener('touchstart', handleInput, {passive: false});
+    btn.addEventListener('mousedown', handleInput);
+});
+
+</script>
+</body>
+</html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vibe Coding Journey</title>
+    <!-- Tailwind CSS for styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons for Vanilla JS -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    
+    <style>
+        /* Hide scrollbar for the sidebar navigation on mobile */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        /* Smooth fade and slide transitions for content */
+        .fade-enter {
+            opacity: 0;
+            transform: translateY(16px);
+        }
+        .fade-enter-active {
+            opacity: 1;
+            transform: translateY(0);
+            transition: opacity 300ms ease-out, transform 300ms ease-out;
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-900 text-slate-100 font-sans selection:bg-indigo-500/30">
+
+    <!-- Header -->
+    <header class="border-b border-slate-800 bg-slate-900/50 backdrop-blur-md sticky top-0 z-10">
+        <div class="max-w-6xl mx-auto px-6 py-6 flex items-center gap-4">
+            <div class="p-3 bg-indigo-500/20 rounded-xl">
+                <i data-lucide="code-2" class="w-8 h-8 text-indigo-400" aria-hidden="true"></i>
+            </div>
+            <div>
+                <h1 class="text-2xl font-bold text-white tracking-tight">Vibe Coding Journey</h1>
+                <p class="text-slate-400 text-sm mt-1">From Q&A to Collaborative Development</p>
+            </div>
+        </div>
+    </header>
+
+    <main class="max-w-6xl mx-auto px-6 py-8 md:py-12">
+        <div class="flex flex-col md:flex-row gap-8 lg:gap-12">
+            
+            <!-- Sidebar Navigation -->
+            <nav class="md:w-1/3 lg:w-1/4 shrink-0" aria-label="Course Sections">
+                <div id="sidebar-container" class="flex flex-row md:flex-col gap-2 overflow-x-auto pb-4 md:pb-0 hide-scrollbar">
+                    <!-- Navigation buttons will be injected here by JavaScript -->
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <div class="md:w-2/3 lg:w-3/4">
+                <div class="bg-slate-800/30 border border-slate-800 rounded-2xl p-6 md:p-10 min-h-[500px]">
+                    <div id="content-container" class="transition-all duration-300">
+                        <!-- Dynamic content will be injected here by JavaScript -->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Data Structure mapping our content
+        const learningData = [
+            {
+                id: 'paradigm',
+                title: 'The Paradigm Shift: AI as a Collaborative Partner',
+                icon: 'lightbulb',
+                description: 'Transforming how I view and interact with AI in my workflow.',
+                bgColor: 'bg-amber-500',
+                badgeColor: 'bg-amber-500/20',
+                textColor: 'text-amber-500',
+                points: [
+                    { title: 'Beyond Q&A', desc: 'Transitioning from viewing AI as a simple question-answering tool to a versatile assistant capable of adapting to any major or industry.' },
+                    { title: 'The Art of Prompting', desc: 'Discovering the "ease of access" in modern development. Learning that refining and iterating on prompts is a skill in itself, allowing you to steer the AI to produce exactly what you envision.' },
+                    { title: 'New Perspectives', desc: 'Learning to conceptualize and approach coding problems in entirely new ways that you wouldn\'t have considered before.' }
+                ]
+            },
+            {
+                id: 'webdev',
+                title: 'Web Development & Interactive Design',
+                icon: 'monitor-smartphone',
+                description: 'Building dynamic, polished experiences for the web.',
+                bgColor: 'bg-blue-500',
+                badgeColor: 'bg-blue-500/20',
+                textColor: 'text-blue-500',
+                points: [
+                    { title: 'Full-Stack Exposure', desc: 'Gaining hands-on experience with a variety of languages including HTML, CSS, JavaScript, Java, and PHP.' },
+                    { title: 'Dynamic User Experiences', desc: 'Moving beyond static pages to build interactive web apps featuring polished UI components like Flashcards, Carousel Slides, and Masonry layouts.' },
+                    { title: 'Polishing & Refining', desc: 'Using AI not just to write the initial code, but to refine the aesthetics and user experience of websites.' }
+                ]
+            },
+            {
+                id: 'gamedev',
+                title: 'Game Development & Deep Debugging',
+                icon: 'gamepad-2',
+                description: 'Bringing creative ideas to life and understanding the underlying logic.',
+                bgColor: 'bg-purple-500',
+                badgeColor: 'bg-purple-500/20',
+                textColor: 'text-purple-500',
+                points: [
+                    { title: 'Bringing Ideas to Life', desc: 'Successfully using AI to help code your first game projects.' },
+                    { title: 'Meaningful Troubleshooting', desc: 'Shifting from letting AI silently fix backend code to actually understanding why something broke. Especially when building complex logic (like managing hitboxes, movement loops, or state in classic arcade-style games), learning to use AI as a tutor to explain the mistakes makes you a better developer.' }
+                ]
+            },
+            {
+                id: 'workflow',
+                title: 'Workflow, Architecture, & Version Control',
+                icon: 'github',
+                description: 'Mastering the tools and systems that professionals use.',
+                bgColor: 'bg-emerald-500',
+                badgeColor: 'bg-emerald-500/20',
+                textColor: 'text-emerald-500',
+                points: [
+                    { title: 'Version Control Mastery', desc: 'Discovering the power of GitHub for securely storing and managing coding files.' },
+                    { title: 'Development Environments', desc: 'Utilizing GitHub’s built-in IDE and getting comfortable with command-prompt navigation for a much smoother, professional workflow.' },
+                    { title: 'System Architecture', desc: 'Having a "lightbulb moment" regarding file management. Understanding how different folders, scripts, and assets connect and communicate to create a unified program.' }
+                ]
+            },
+            {
+                id: 'future',
+                title: 'Expanding Your Toolkit',
+                icon: 'sparkles',
+                description: 'Additional powerful AI applications that fit perfectly into your new vibe coding skill set.',
+                bgColor: 'bg-pink-500',
+                badgeColor: 'bg-pink-500/20',
+                textColor: 'text-pink-500',
+                points: [
+                    { title: 'Writing Documentation (The README)', desc: 'You mentioned GitHub file organization; AI is incredible at reading your finished project files and generating professional README.md files so others understand how to play your game or use your web app.' },
+                    { title: 'Code Commenting & Readability', desc: 'AI can take a messy block of code that works and add clear, line-by-line comments, making it much easier for you to come back to it weeks later.' },
+                    { title: 'Project Scoping & Planning', desc: 'Before writing a single line of code, you can use AI to map out the exact folder structure and list of files you will need for a new project.' },
+                    { title: 'Translating Code', desc: 'If you wrote a great piece of logic in Java, you can have the AI instantly translate it into JavaScript for a web deployment.' }
+                ]
+            },
+            {
+                id: 'reflection',
+                title: 'Course Reflection',
+                icon: 'book-open',
+                description: 'Personal thoughts on the class structure, flow, and overall experience.',
+                bgColor: 'bg-teal-500',
+                badgeColor: 'bg-teal-500/20',
+                textColor: 'text-teal-500',
+                points: [
+                    { title: 'Overall Impressions', desc: 'For a brand new class, we are all performing very well with the structure and layout. While there are expected hiccups, it is by far my favorite class to go to.' },
+                    { title: 'A Welcome Change of Pace', desc: 'It is a very nice break from my other classes that have strict expectations. The flow and cadence are smooth, and there is plenty of time to complete every project.' },
+                    { title: 'Key Takeaways', desc: 'I am learning a lot about multiple things, particularly mastering GitHub and shifting my mindset to use AI as a co-developer rather than just a problem-solver.' },
+                    { title: 'Classroom Environment', desc: 'Working together every meeting as well as joking around has created a perfect balance of fun and education.' }
+                ]
+            }
+        ];
+
+        // State variables
+        let activeTab = learningData[0].id;
+        let isAnimating = false;
+
+        // DOM Elements
+        const sidebarContainer = document.getElementById('sidebar-container');
+        const contentContainer = document.getElementById('content-container');
+
+        // Main function to change tabs
+        function handleTabChange(id) {
+            if (id === activeTab || isAnimating) return;
+            isAnimating = true;
+
+            // Start fade out animation
+            contentContainer.style.opacity = '0';
+            contentContainer.style.transform = 'translateY(16px)';
+
+            // Wait for fade out, then change content and fade in
+            setTimeout(() => {
+                activeTab = id;
+                renderSidebar();
+                renderContent();
+                
+                // Trigger reflow to ensure the transition restarts smoothly
+                void contentContainer.offsetWidth; 
+                
+                // Fade in
+                contentContainer.style.opacity = '1';
+                contentContainer.style.transform = 'translateY(0)';
+                
+                // Allow new animations
+                setTimeout(() => {
+                    isAnimating = false;
+                }, 300);
+            }, 200);
+        }
+
+        // Render the sidebar navigation
+        function renderSidebar() {
+            sidebarContainer.innerHTML = learningData.map(section => {
+                const isActive = activeTab === section.id;
+                
+                // Dynamically build classes based on active state
+                const buttonClasses = `flex items-center gap-3 p-4 rounded-xl text-left transition-all duration-200 min-w-[240px] md:min-w-0 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 focus:ring-offset-slate-900 ${
+                    isActive 
+                        ? 'bg-slate-800 shadow-lg border border-slate-700' 
+                        : 'hover:bg-slate-800/50 text-slate-400 hover:text-slate-200'
+                }`;
+                
+                const iconContainerClasses = `p-2 rounded-lg transition-colors ${isActive ? section.bgColor : 'bg-slate-800'}`;
+                const iconClasses = `w-5 h-5 ${isActive ? 'text-white' : 'text-slate-400'}`;
+                const titleClasses = `font-semibold flex-1 ${isActive ? 'text-slate-100' : ''}`;
+                const chevronClasses = `w-4 h-4 transition-transform ${isActive ? 'translate-x-1 text-slate-300' : 'opacity-0'}`;
+
+                return `
+                    <button
+                        onclick="handleTabChange('${section.id}')"
+                        class="${buttonClasses}"
+                        aria-current="${isActive ? 'page' : 'false'}"
+                    >
+                        <div class="${iconContainerClasses}">
+                            <i data-lucide="${section.icon}" class="${iconClasses}"></i>
+                        </div>
+                        <span class="${titleClasses}">${section.title}</span>
+                        <i data-lucide="chevron-right" class="${chevronClasses}"></i>
+                    </button>
+                `;
+            }).join('');
+            
+            // Re-initialize icons for newly added DOM elements
+            lucide.createIcons();
+        }
+
+        // Render the main content area
+        function renderContent() {
+            const activeData = learningData.find(d => d.id === activeTab);
+            
+            // Map through the points to create the grid of cards
+            const pointsHtml = activeData.points.map(point => `
+                <div class="bg-slate-800/50 border border-slate-700/50 rounded-xl p-5 hover:bg-slate-800 transition-colors">
+                    <div class="flex items-start gap-4">
+                        <i data-lucide="check-circle-2" class="w-6 h-6 text-indigo-400 shrink-0 mt-0.5"></i>
+                        <div>
+                            <h3 class="text-lg font-semibold text-slate-200 mb-2">${point.title}</h3>
+                            <p class="text-slate-400 leading-relaxed">${point.desc}</p>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            // Assemble the final content HTML
+            contentContainer.innerHTML = `
+                <div class="flex items-start gap-5 mb-8">
+                    <div class="p-4 rounded-2xl ${activeData.badgeColor} mt-1">
+                        <i data-lucide="${activeData.icon}" class="w-8 h-8 ${activeData.textColor}"></i>
+                    </div>
+                    <div>
+                        <h2 class="text-3xl font-bold text-white mb-3">${activeData.title}</h2>
+                        <p class="text-lg text-slate-300 leading-relaxed">${activeData.description}</p>
+                    </div>
+                </div>
+                
+                <div class="grid gap-4 mt-8">
+                    ${pointsHtml}
+                </div>
+            `;
+            
+            // Re-initialize icons for newly added DOM elements
+            lucide.createIcons();
+        }
+
+        // Initial setup on page load
+        document.addEventListener('DOMContentLoaded', () => {
+            // Initialize lucide icons for the static header
+            lucide.createIcons();
+            
+            // Render initial state
+            renderSidebar();
+            renderContent();
+        });
+    </script>
+</body>
+</html>
