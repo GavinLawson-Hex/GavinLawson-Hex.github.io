@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Focus Task Manager</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        // Check for saved theme preference or use system preference
+        if (localStorage.theme === 'dark' || (!('theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#0f172a',
+                        darkCard: '#1e293b',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .task-item.dragging {
+            opacity: 0.4;
+            scale: 0.95;
+            border-color: #3b82f6;
+        }
+        .task-list-container {
+            min-height: 100px;
+        }
+        .task-item {
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .completed-text {
+            text-decoration: line-through;
+            opacity: 0.5;
+        }
+        /* Custom scrollbar for dark mode */
+        .dark ::-webkit-scrollbar { width: 8px; }
+        .dark ::-webkit-scrollbar-track { background: #1e293b; }
+        .dark ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
+    </style>
+</head>
+<body class="bg-slate-50 dark:bg-darkBg min-h-screen py-12 px-4 sm:px-6 transition-colors duration-300">
+
+    <div class="max-w-xl mx-auto">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-8">
+            <div>
+                <h1 class="text-3xl font-bold text-slate-900 dark:text-white tracking-tight">Focus</h1>
+                <p class="text-slate-500 dark:text-slate-400 text-sm mt-1">Smart Local Tasks</p>
+            </div>
+            <div class="flex gap-2">
+                <!-- Dark Mode Toggle -->
+                <button id="theme-toggle" class="bg-white dark:bg-darkCard p-3 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 text-slate-600 dark:text-yellow-400 hover:scale-105 transition-all">
+                    <i id="theme-icon" class="fas fa-moon fa-lg"></i>
+                </button>
+                <div class="bg-white dark:bg-darkCard p-3 rounded-2xl shadow-sm border border-slate-100 dark:border-slate-700 text-blue-600">
+                    <i class="fas fa-list-check fa-lg"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <form id="todo-form" class="space-y-3 mb-8">
+            <div class="relative group">
+                <input
+                    type="text"
+                    id="todo-input"
+                    placeholder="Add a new task..."
+                    class="w-full bg-white dark:bg-darkCard border border-slate-200 dark:border-slate-700 rounded-2xl py-4 pl-12 pr-16 shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all duration-200 text-slate-700 dark:text-slate-200"
+                    required
+                >
+                <i class="fas fa-plus absolute left-4 top-1/2 -translate-y-1/2 text-slate-400"></i>
+                <button
+                    type="submit"
+                    class="absolute right-3 top-1/2 -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all shadow-md active:scale-95"
+                >
+                    Add
+                </button>
+            </div>
+            
+            <!-- Options Bar -->
+            <div class="flex items-center gap-4 px-2">
+                <label class="flex items-center gap-2 cursor-pointer group">
+                    <div class="relative">
+                        <input type="checkbox" id="repeat-toggle" class="sr-only">
+                        <div class="w-10 h-5 bg-slate-200 dark:bg-slate-700 rounded-full transition-colors group-hover:bg-slate-300"></div>
+                        <div id="repeat-dot" class="absolute left-1 top-1 bg-white w-3 h-3 rounded-full transition-transform duration-200"></div>
+                    </div>
+                    <span class="text-xs font-medium text-slate-500 dark:text-slate-400 flex items-center gap-1">
+                        <i class="fas fa-arrows-rotate text-[10px]"></i> Repeat Daily
+                    </span>
+                </label>
+            </div>
+        </form>
+
+        <!-- Empty State -->
+        <div id="empty-state" class="hidden text-center py-20 bg-white dark:bg-darkCard rounded-3xl border-2 border-dashed border-slate-200 dark:border-slate-800">
+            <div class="bg-slate-50 dark:bg-slate-800 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <i class="far fa-clock text-slate-300 dark:text-slate-600 fa-2xl"></i>
+            </div>
+            <p class="text-slate-400 dark:text-slate-500 font-medium">Your list is empty. Start fresh!</p>
+        </div>
+
+        <!-- Task List -->
+        <div id="task-list" class="space-y-3 task-list-container">
+            <!-- Tasks injected here -->
+        </div>
+
+        <!-- Footer Stats -->
+        <div id="footer-stats" class="mt-8 flex justify-between items-center text-[13px] text-slate-400 dark:text-slate-500 px-2 hidden">
+            <span id="remaining-count">0 items remaining</span>
+            <div class="flex items-center gap-3">
+                <button id="reset-daily" class="hover:text-blue-500 transition-colors flex items-center gap-1">
+                    <i class="fas fa-sync-alt"></i> Reset Daily Tasks
+                </button>
+                <div class="flex items-center gap-1">
+                    <i class="fas fa-database text-[10px]"></i>
+                    <span>Local Storage</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const todoForm = document.getElementById('todo-form');
+        const todoInput = document.getElementById('todo-input');
+        const repeatToggle = document.getElementById('repeat-toggle');
+        const repeatDot = document.getElementById('repeat-dot');
+        const taskList = document.getElementById('task-list');
+        const emptyState = document.getElementById('empty-state');
+        const footerStats = document.getElementById('footer-stats');
+        const remainingCount = document.getElementById('remaining-count');
+        const themeToggle = document.getElementById('theme-toggle');
+        const themeIcon = document.getElementById('theme-icon');
+        const resetDailyBtn = document.getElementById('reset-daily');
+
+        let tasks = JSON.parse(localStorage.getItem('tasks')) || [];
+
+        // --- Theme Management ---
+        function updateThemeUI() {
+            const isDark = document.documentElement.classList.contains('dark');
+            themeIcon.className = isDark ? 'fas fa-sun fa-lg' : 'fas fa-moon fa-lg';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+
+        themeToggle.addEventListener('click', () => {
+            document.documentElement.classList.toggle('dark');
+            updateThemeUI();
+        });
+
+        // --- Repeat Toggle Animation ---
+        repeatToggle.addEventListener('change', () => {
+            if (repeatToggle.checked) {
+                repeatDot.style.transform = 'translateX(20px)';
+                repeatDot.parentElement.classList.replace('bg-slate-200', 'bg-blue-500');
+                repeatDot.parentElement.classList.replace('dark:bg-slate-700', 'dark:bg-blue-600');
+            } else {
+                repeatDot.style.transform = 'translateX(0px)';
+                repeatDot.parentElement.classList.replace('bg-blue-500', 'bg-slate-200');
+                repeatDot.parentElement.classList.replace('dark:bg-blue-600', 'dark:bg-slate-700');
+            }
+        });
+
+        // --- Core Logic ---
+        function saveTasks() {
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+            renderTasks();
+        }
+
+        todoForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const text = todoInput.value.trim();
+            if (!text) return;
+
+            const newTask = {
+                id: Date.now().toString(),
+                text: text,
+                completed: false,
+                isRepeatable: repeatToggle.checked,
+                order: tasks.length
+            };
+
+            tasks.push(newTask);
+            todoInput.value = '';
+            // Don't reset repeat toggle automatically for bulk entry, but we could if preferred
+            saveTasks();
+        });
+
+        function toggleTask(id) {
+            tasks = tasks.map(task => 
+                task.id === id ? { ...task, completed: !task.completed } : task
+            );
+            saveTasks();
+        }
+
+        function deleteTask(id) {
+            tasks = tasks.filter(task => task.id !== id);
+            saveTasks();
+        }
+
+        resetDailyBtn.addEventListener('click', () => {
+            tasks = tasks.map(task => 
+                task.isRepeatable ? { ...task, completed: false } : task
+            );
+            saveTasks();
+        });
+
+        function renderTasks() {
+            const sortedTasks = [...tasks].sort((a, b) => {
+                if (a.completed !== b.completed) return a.completed ? 1 : -1;
+                return a.order - b.order;
+            });
+
+            if (sortedTasks.length === 0) {
+                emptyState.classList.remove('hidden');
+                footerStats.classList.add('hidden');
+                taskList.innerHTML = '';
+            } else {
+                emptyState.classList.add('hidden');
+                footerStats.classList.remove('hidden');
+                
+                taskList.innerHTML = sortedTasks.map((task, index) => `
+                    <div
+                        class="task-item group flex items-center bg-white dark:bg-darkCard border rounded-2xl p-4 cursor-default ${task.completed ? 'opacity-60 bg-slate-50 dark:bg-slate-800 border-transparent' : 'border-slate-200 dark:border-slate-700 shadow-sm hover:shadow-md'}"
+                        draggable="true"
+                        data-id="${task.id}"
+                    >
+                        <div class="drag-handle cursor-grab active:cursor-grabbing p-1 -ml-1 text-slate-300 dark:text-slate-600 group-hover:text-slate-400 transition-colors">
+                            <i class="fas fa-grip-vertical"></i>
+                        </div>
+
+                        <button
+                            onclick="toggleTask('${task.id}')"
+                            class="ml-3 flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${task.completed ? 'bg-blue-500 border-blue-500' : 'border-slate-300 dark:border-slate-600 hover:border-blue-400'}"
+                        >
+                            ${task.completed ? '<i class="fas fa-check text-white text-[10px]"></i>' : ''}
+                        </button>
+
+                        <div class="ml-4 flex-grow flex items-center gap-2">
+                            <span class="text-[15px] font-medium transition-all duration-300 ${task.completed ? 'completed-text text-slate-400 dark:text-slate-500' : 'text-slate-700 dark:text-slate-200'}">
+                                ${task.text}
+                            </span>
+                            ${task.isRepeatable ? `
+                                <span class="text-[10px] uppercase tracking-wider px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-900/30 text-blue-500 dark:text-blue-400 font-bold border border-blue-100 dark:border-blue-800">
+                                    <i class="fas fa-arrows-rotate mr-1"></i> Daily
+                                </span>
+                            ` : ''}
+                        </div>
+
+                        <button
+                            onclick="deleteTask('${task.id}')"
+                            class="ml-2 p-2 opacity-0 group-hover:opacity-100 text-slate-400 dark:text-slate-600 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-all"
+                        >
+                            <i class="fas fa-trash-can text-sm"></i>
+                        </button>
+                    </div>
+                `).join('');
+
+                initDragAndDrop();
+            }
+
+            remainingCount.innerText = `${tasks.filter(t => !t.completed).length} items remaining`;
+            
+            // Show/Hide reset button if there are repeatable tasks
+            const hasRepeatables = tasks.some(t => t.isRepeatable && t.completed);
+            resetDailyBtn.style.display = hasRepeatables ? 'flex' : 'none';
+        }
+
+        // --- Drag and Drop Logic ---
+        function initDragAndDrop() {
+            const draggables = document.querySelectorAll('.task-item');
+            
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', () => {
+                    draggable.classList.add('dragging');
+                });
+
+                draggable.addEventListener('dragend', () => {
+                    draggable.classList.remove('dragging');
+                    updateOrderAfterDrag();
+                });
+            });
+
+            taskList.addEventListener('dragover', e => {
+                e.preventDefault();
+                const afterElement = getDragAfterElement(taskList, e.clientY);
+                const dragging = document.querySelector('.dragging');
+                if (dragging) {
+                    if (afterElement == null) {
+                        taskList.appendChild(dragging);
+                    } else {
+                        taskList.insertBefore(dragging, afterElement);
+                    }
+                }
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.task-item:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function updateOrderAfterDrag() {
+            const currentItems = [...taskList.querySelectorAll('.task-item')];
+            const newTasksOrder = [];
+            
+            currentItems.forEach((item, index) => {
+                const id = item.getAttribute('data-id');
+                const task = tasks.find(t => t.id === id);
+                if (task) {
+                    task.order = index;
+                    newTasksOrder.push(task);
+                }
+            });
+            
+            // Re-sync with the global tasks array (preserving any tasks that might have been filtered)
+            tasks = newTasksOrder;
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Initial load
+        window.onload = () => {
+            updateThemeUI();
+            renderTasks();
+        };
+    </script>
+</body>
+</html>
