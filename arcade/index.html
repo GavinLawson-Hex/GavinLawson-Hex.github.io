@@ -160,13 +160,19 @@
         .si-btn { background: #22c55e; color: #000; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: 900; cursor: pointer; margin-top: 30px; border-radius: 4px; transition: all 0.2s;}
         .si-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
         #si-lives-icons { color: #22c55e; font-size: 24px; letter-spacing: 4px;}
+
+        /* Asteroids specific */
+        #ast-box { position: relative; border: 4px solid #1e293b; background: #000; box-shadow: 0 0 50px rgba(255, 255, 255, 0.1); width: 800px; max-width: 95vw; aspect-ratio: 4/3; overflow: hidden;}
+        #ast-gameCanvas { display: block; width: 100%; height: 100%; }
+        #ast-stats { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; font-size: 24px; pointer-events: none; z-index: 5; font-family: 'Courier New', monospace; color: white;}
+        #ast-livesDisplay { color: #38bdf8; letter-spacing: 5px; }
+        #ast-pauseIndicator { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; opacity: 0.3; pointer-events: none; color: white; font-family: 'Courier New', monospace;}
+        .ast-btn { background: transparent; color: #fff; border: 2px solid #fff; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 30px; transition: all 0.2s; text-transform: uppercase; font-family: 'Courier New', monospace;}
+        .ast-btn:hover { background: #fff; color: #000; box-shadow: 0 0 20px #fff; }
     </style>
 </head>
 <body>
 
-    <!-- ========================================== -->
-    <!-- 1. MAIN MENU VIEW                          -->
-    <!-- ========================================== -->
     <div id="menu-view" class="w-full h-full flex flex-col items-center p-8 overflow-y-auto relative">
         <div class="grid-bg"></div>
 
@@ -176,67 +182,61 @@
         </header>
 
         <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10 max-w-6xl w-full">
-            <!-- Pac-Man Cabinet -->
             <div onclick="launchGame('PACMAN')" class="cabinet-card rounded-xl group" style="border-color: #FFFF00;">
                 <div class="game-icon text-yellow-400">🟡</div>
                 <h2 class="pixel-font text-lg md:text-xl text-yellow-400 mb-2">PAC-MAN</h2>
                 <div class="mt-4 px-4 py-2 bg-yellow-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">INSERT COIN</div>
             </div>
 
-            <!-- Galaga Cabinet -->
             <div onclick="launchGame('GALAGA')" class="cabinet-card rounded-xl group" style="border-color: #0000ff;">
                 <div class="game-icon text-red-500 animate-float">🚀</div>
                 <h2 class="pixel-font text-lg md:text-xl text-red-500 mb-2">GALAGA</h2>
                 <div class="mt-4 px-4 py-2 bg-red-600 text-white pixel-font text-[10px] rounded group-hover:bg-white group-hover:text-red-600 transition-colors">START MISSION</div>
             </div>
 
-            <!-- Donkey Kong Cabinet -->
             <div onclick="launchGame('DONKEYKONG')" class="cabinet-card rounded-xl group" style="border-color: #e60012;">
                 <div class="game-icon text-red-600">🦍</div>
                 <h2 class="pixel-font text-lg md:text-xl text-red-600 mb-2">DONKEY KONG</h2>
                 <div class="mt-4 px-4 py-2 bg-red-600 text-white pixel-font text-[10px] rounded group-hover:bg-white group-hover:text-red-600 transition-colors">CLIMB UP</div>
             </div>
 
-            <!-- Centipede Cabinet -->
             <div onclick="launchGame('CENTIPEDE')" class="cabinet-card rounded-xl group" style="border-color: #39ff14;">
                 <div class="game-icon text-green-400">🐛</div>
                 <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">CENTIPEDE</h2>
                 <div class="mt-4 px-4 py-2 bg-green-500 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">PLAY NOW</div>
             </div>
 
-            <!-- Pong Cabinet -->
             <div onclick="launchGame('PONG')" class="cabinet-card rounded-xl group" style="border-color: #4ade80;">
                 <div class="game-icon text-green-400">🏓</div>
                 <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">PONG</h2>
                 <div class="mt-4 px-4 py-2 bg-green-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">SERVE BALL</div>
             </div>
 
-            <!-- Breakout Cabinet -->
             <div onclick="launchGame('BREAKOUT')" class="cabinet-card rounded-xl group" style="border-color: #38bdf8;">
                 <div class="game-icon text-sky-400">🧱</div>
                 <h2 class="pixel-font text-lg md:text-xl text-sky-400 mb-2">BREAKOUT</h2>
                 <div class="mt-4 px-4 py-2 bg-sky-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">SMASH BRICKS</div>
             </div>
 
-            <!-- Space Invaders Cabinet -->
             <div onclick="launchGame('SPACEINVADERS')" class="cabinet-card rounded-xl group" style="border-color: #22c55e;">
                 <div class="game-icon text-green-500 animate-float">👾</div>
                 <h2 class="pixel-font text-lg md:text-xl text-green-500 mb-2">INVADERS</h2>
                 <div class="mt-4 px-4 py-2 bg-green-500 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">DEFEND EARTH</div>
             </div>
+            
+            <div onclick="launchGame('ASTEROIDS')" class="cabinet-card rounded-xl group" style="border-color: #ffffff;">
+                <div class="game-icon text-white animate-float">☄️</div>
+                <h2 class="pixel-font text-lg md:text-xl text-white mb-2">ASTEROIDS</h2>
+                <div class="mt-4 px-4 py-2 bg-white text-black pixel-font text-[10px] rounded group-hover:bg-gray-300 transition-colors">HYPERSPACE</div>
+            </div>
         </main>
         
         <footer class="mt-auto pt-10 text-center text-gray-500 text-sm shrink-0">
-            <p class="pixel-font text-[10px]">&copy; 2024 RETRO-ARCADE OS v1.0.4</p>
+            <p class="pixel-font text-[10px]">&copy; 2024 RETRO-ARCADE OS v1.0.5</p>
         </footer>
     </div>
 
 
-    <!-- ========================================== -->
-    <!-- 2. GAME CONTAINERS                         -->
-    <!-- ========================================== -->
-
-    <!-- CENTIPEDE -->
     <div id="centipede-container" class="game-wrapper crt hidden-view">
         <div class="fixed top-4 w-full px-6 flex justify-between items-start z-10 pointer-events-none text-sm md:text-xl centipede-text">
             <div class="flex flex-col">
@@ -252,7 +252,6 @@
         <div class="relative">
             <canvas id="c-gameCanvas"></canvas>
             
-            <!-- Start Overlay -->
             <div id="c-start-overlay" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-20">
                 <h1 class="text-5xl text-green-400 font-bold mb-2 centipede-text">CENTIPEDE</h1>
                 <div class="text-white text-sm mb-8 space-y-2 text-center opacity-80 centipede-text">
@@ -263,7 +262,6 @@
             </div>
         </div>
 
-        <!-- Mobile Controls -->
         <div class="fixed bottom-8 w-full max-w-xs flex justify-between px-4 md:hidden pointer-events-none z-10">
             <div id="c-joystick-zone" class="w-32 h-32 bg-white/5 rounded-full border border-white/10 pointer-events-auto relative">
                 <div id="c-joystick-knob" class="w-12 h-12 bg-green-500/50 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
@@ -274,7 +272,6 @@
         </div>
     </div>
 
-    <!-- DONKEY KONG -->
     <div id="dk-container" class="game-wrapper hidden-view">
         <div id="dk-box" class="crt">
             <canvas id="dk-gameCanvas" width="224" height="288"></canvas>
@@ -306,7 +303,6 @@
         </div>
     </div>
 
-    <!-- GALAGA -->
     <div id="galaga-container" class="game-wrapper crt hidden-view">
         <div id="galaga-box">
             <div id="galaga-ui">
@@ -333,7 +329,6 @@
         </div>
     </div>
 
-    <!-- PACMAN -->
     <div id="pacman-container" class="game-wrapper hidden-view">
         <div id="pacman-box">
             <canvas id="p-gameCanvas"></canvas>
@@ -365,7 +360,6 @@
         </div>
     </div>
     
-    <!-- PONG -->
     <div id="pong-container" class="game-wrapper crt hidden-view">
         <div id="pong-header">
             <div>Player 1</div>
@@ -391,7 +385,6 @@
         </div>
     </div>
 
-    <!-- BREAKOUT -->
     <div id="breakout-container" class="game-wrapper crt hidden-view">
         <div id="breakout-box">
             <div class="breakout-stats-bar">
@@ -401,11 +394,10 @@
                 <div class="stat-item">HIGH <span id="breakout-highScoreVal">0</span></div>
             </div>
 
-            <div id="breakout-pauseIndicator" class="hidden">PAUSED</div>
+            <div id="breakout-pauseIndicator" class="hidden-view">PAUSED</div>
 
             <canvas id="breakout-canvas" width="700" height="500"></canvas>
 
-            <!-- Screens -->
             <div id="breakout-start-screen" class="breakout-ui-overlay">
                 <h1 class="breakout-title">BREAKOUT</h1>
                 <p style="color: #94a3b8; max-width: 400px; line-height: 1.6;">
@@ -417,7 +409,6 @@
         </div>
     </div>
 
-    <!-- SPACE INVADERS -->
     <div id="si-container" class="game-wrapper crt hidden-view">
         <div id="si-box">
             <div id="si-header">
@@ -436,15 +427,30 @@
         </div>
     </div>
 
+    <div id="ast-container" class="game-wrapper crt hidden-view">
+        <div id="ast-box">
+            <div id="ast-stats">
+                <div>SCORE: <span id="ast-scoreVal">0000</span></div>
+                <div id="ast-livesDisplay"></div>
+            </div>
+            <div id="ast-pauseIndicator" class="hidden-view">PAUSED</div>
+            <canvas id="ast-gameCanvas" width="800" height="600"></canvas>
+            
+            <div id="ast-startScreen" class="absolute inset-0 flex flex-col items-center justify-center bg-black/90 z-30 text-center font-mono">
+                <h1 style="font-size: 4rem; color: white; letter-spacing: 12px; text-shadow: 0 0 15px #fff; margin: 0;">ASTEROIDS</h1>
+                <p style="color: #64748b; margin-top: 10px; max-width: 500px; line-height: 1.6;">
+                    [W/S] THRUST/REVERSE • [A/D] ROTATE<br>
+                    [SPACE] FIRE • [SHIFT] HYPERSPACE • [P] PAUSE
+                </p>
+                <button class="ast-btn" onclick="if(EngineAsteroids) EngineAsteroids.startGame()">Engage</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- ========================================== -->
-    <!-- 3. UNIFIED LEADERBOARD OVERLAY             -->
-    <!-- ========================================== -->
     <div id="global-leaderboard-overlay" class="fixed inset-0 hidden-view flex-col items-center justify-center">
         <h2 class="text-4xl md:text-5xl text-red-600 mb-2 text-center" id="lb-game-over-title">GAME OVER</h2>
         <p class="text-xl md:text-2xl text-zinc-300 mb-8 text-center">FINAL SCORE: <span id="lb-final-score" class="text-yellow-400">0</span></p>
         
-        <!-- State 1: Input Initials -->
         <div id="lb-input-section" class="flex flex-col items-center bg-zinc-900 p-6 md:p-8 border-4 border-zinc-700 rounded-lg mb-6 w-11/12 max-w-md">
             <p class="mb-4 text-cyan-400 text-center text-sm md:text-base animate-pulse">ENTER INITIALS TO TRANSMIT</p>
             <div class="flex space-x-4 mb-6">
@@ -455,7 +461,6 @@
             <button id="lb-submit-btn" onclick="lbSubmitScore()" class="px-6 py-3 bg-zinc-700 text-zinc-400 cursor-not-allowed transition-colors" disabled>SUBMIT SCORE</button>
         </div>
 
-        <!-- State 2: Show Top Scores -->
         <div id="lb-display-section" class="hidden-view flex-col items-center bg-zinc-900 p-6 md:p-8 border-4 border-zinc-700 rounded-lg mb-6 w-11/12 max-w-md">
             <h3 class="text-2xl text-yellow-400 mb-2" id="lb-title">TOP SATELLITE SCORES</h3>
             <p id="lb-loading-msg" class="text-zinc-500 text-xs mb-4">CONNECTING TO DATABASE...</p>
@@ -463,13 +468,11 @@
             <div class="w-full flex-1 overflow-y-auto mb-4 border-t border-b border-zinc-800 py-4 min-h-[150px]">
                 <table class="w-full text-left text-sm md:text-base">
                     <tbody id="lb-table-body">
-                        <!-- Rows injected via JS -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-4">
             <button onclick="lbPlayAgain()" class="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold border-2 border-cyan-400">PLAY AGAIN</button>
             <button onclick="returnToMenu()" class="px-6 py-3 bg-black hover:bg-zinc-800 text-white border-2 border-zinc-600">MAIN MENU</button>
@@ -628,6 +631,7 @@
         if (gameName === 'PONG') { containerId = 'pong-container'; activeGameInstance = EnginePong; }
         if (gameName === 'BREAKOUT') { containerId = 'breakout-container'; activeGameInstance = EngineBreakout; }
         if (gameName === 'SPACEINVADERS') { containerId = 'si-container'; activeGameInstance = EngineSpaceInvaders; }
+        if (gameName === 'ASTEROIDS') { containerId = 'ast-container'; activeGameInstance = EngineAsteroids; }
 
         document.getElementById(containerId).classList.remove('hidden-view');
         activeGameInstance.start();
@@ -3307,6 +3311,258 @@
         };
     })();
 
-</script>
-</body>
-</html>
+    /* =========================================================================
+       GAME 8: ASTEROIDS
+       ========================================================================= */
+    const EngineAsteroids = (function() {
+        const canvas = document.getElementById('ast-gameCanvas');
+        const ctx = canvas ? canvas.getContext('2d') : null;
+        const scoreDisplay = document.getElementById('ast-scoreVal');
+        const livesDisplay = document.getElementById('ast-livesDisplay');
+        const shakeContainer = document.getElementById('ast-box');
+        const pauseIndicator = document.getElementById('ast-pauseIndicator');
+
+        if(canvas) {
+            canvas.width = 800;
+            canvas.height = 600;
+        }
+
+        // --- Configuration ---
+        const FPS = 60;
+        const FRICTION = 0.7; 
+        const SHIP_SIZE = 20;
+        const SHIP_THRUST = 5.5;
+        const SHIP_REV_THRUST = 3.3; 
+        const SHIP_TURN_SPEED = 360;
+        const INVULNERABLE_TIME = 3; 
+        const BLINK_TIME = 0.1;
+        const BULLET_MAX = 8;
+        const BULLET_SPD = 550;
+        const BULLET_DIST = 0.6;
+        const ASTEROID_NUM = 3;
+        const ASTEROID_SIZE = 100;
+        const ASTEROID_SPD = 55;
+        const ASTEROID_VERT = 10;
+        const SHIP_TRAIL_LEN = 10;
+
+        // Audio System
+        const AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freq, type, duration, vol = 0.1, ramp = true) {
+            if (AudioCtx.state === 'suspended') return;
+            const osc = AudioCtx.createOscillator();
+            const gain = AudioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, AudioCtx.currentTime);
+            osc.connect(gain); gain.connect(AudioCtx.destination);
+            gain.gain.setValueAtTime(vol, AudioCtx.currentTime);
+            if (ramp) gain.gain.exponentialRampToValueAtTime(0.0001, AudioCtx.currentTime + duration);
+            osc.start(); osc.stop(AudioCtx.currentTime + duration);
+        }
+
+        let state = {
+            running: false,
+            paused: false,
+            score: 0,
+            lives: 3,
+            level: 1,
+            shake: 0,
+            ship: null,
+            asteroids: [],
+            bullets: [],
+            ufoBullets: [],
+            particles: [],
+            stars: [],
+            ufo: { active: false, x: 0, y: 0, xv: 0, yv: 0, r: 15, timer: 0, type: 'large' },
+            beatTime: 0,
+            beatLow: true,
+            lastExtraLifeScore: 0
+        };
+
+        let gameLoopId;
+        let reqId;
+
+        function initStars() {
+            state.stars = [];
+            for (let i = 0; i < 80; i++) {
+                state.stars.push({
+                    x: Math.random() * canvas.width,
+                    y: Math.random() * canvas.height,
+                    size: Math.random() * 2,
+                    p: Math.random() * 0.05 
+                });
+            }
+        }
+
+        function createShip() {
+            return {
+                x: canvas.width / 2,
+                y: canvas.height / 2,
+                r: SHIP_SIZE / 2,
+                a: 90 / 180 * Math.PI, 
+                rot: 0,
+                thrusting: false,
+                reversing: false,
+                thrust: { x: 0, y: 0 },
+                blinkTime: Math.ceil(INVULNERABLE_TIME / BLINK_TIME),
+                blinkNum: Math.ceil(INVULNERABLE_TIME / BLINK_TIME),
+                dead: false,
+                trail: []
+            };
+        }
+
+        function createAsteroid(x, y, r) {
+            let lvlMult = 1 + (state.level * 0.15);
+            let ast = {
+                x: x,
+                y: y,
+                xv: (Math.random() * ASTEROID_SPD * lvlMult / FPS) * (Math.random() < 0.5 ? 1 : -1),
+                yv: (Math.random() * ASTEROID_SPD * lvlMult / FPS) * (Math.random() < 0.5 ? 1 : -1),
+                r: r,
+                a: Math.random() * Math.PI * 2,
+                vert: Math.floor(Math.random() * (ASTEROID_VERT + 1) + ASTEROID_VERT / 2),
+                offsets: []
+            };
+            for (let i = 0; i < ast.vert; i++) {
+                ast.offsets.push(Math.random() * 0.4 * 2 + 1 - 0.4);
+            }
+            return ast;
+        }
+
+        function createExplosion(x, y, color, count = 15) {
+            for (let i = 0; i < count; i++) {
+                state.particles.push({
+                    x, y,
+                    xv: (Math.random() - 0.5) * 10,
+                    yv: (Math.random() - 0.5) * 10,
+                    life: 1.0,
+                    color: color
+                });
+            }
+        }
+
+        function initLevel() {
+            state.asteroids = [];
+            state.bullets = [];
+            state.ufoBullets = [];
+            state.ufo.active = false;
+            state.ufo.timer = 0;
+            const count = Math.min(12, ASTEROID_NUM + (state.level - 1));
+            for (let i = 0; i < count; i++) {
+                let x, y;
+                do {
+                    x = Math.random() * canvas.width;
+                    y = Math.random() * canvas.height;
+                } while (distBetweenPoints(state.ship.x, state.ship.y, x, y) < ASTEROID_SIZE * 1.5);
+                state.asteroids.push(createAsteroid(x, y, Math.ceil(ASTEROID_SIZE / 2)));
+            }
+        }
+
+        function distBetweenPoints(x1, y1, x2, y2) {
+            return Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+        }
+
+        function update() {
+            if (!state.running || state.paused) return;
+
+            const ship = state.ship;
+
+            state.stars.forEach(s => {
+                s.x -= ship.thrust.x * s.p;
+                s.y -= ship.thrust.y * s.p;
+                if (s.x < 0) s.x = canvas.width; else if (s.x > canvas.width) s.x = 0;
+                if (s.y < 0) s.y = canvas.height; else if (s.y > canvas.height) s.y = 0;
+            });
+
+            if (state.score - state.lastExtraLifeScore >= 10000) {
+                state.lives++;
+                state.lastExtraLifeScore += 10000;
+                updateLivesUI();
+                playSound(1200, 'sine', 0.5, 0.2);
+            }
+
+            if (state.shake > 0) {
+                state.shake *= 0.9;
+                shakeContainer.style.transform = `translate(${(Math.random()-0.5)*state.shake}px, ${(Math.random()-0.5)*state.shake}px)`;
+            }
+
+            state.beatTime--;
+            if (state.beatTime <= 0) {
+                const tempo = Math.max(12, 60 - (state.score / 200));
+                state.beatTime = tempo;
+                playSound(state.beatLow ? 60 : 75, 'sine', 0.1, 0.05);
+                state.beatLow = !state.beatLow;
+            }
+
+            for (let i = state.particles.length - 1; i >= 0; i--) {
+                const p = state.particles[i];
+                p.x += p.xv; p.y += p.yv; p.life -= 0.025;
+                if (p.life <= 0) state.particles.splice(i, 1);
+            }
+
+            if (!state.ufo.active) {
+                state.ufo.timer++;
+                if (state.ufo.timer > (state.score > 5000 ? 500 : 800)) {
+                    state.ufo.active = true;
+                    state.ufo.type = (state.score > 10000 || Math.random() > 0.6) ? 'small' : 'large';
+                    state.ufo.r = state.ufo.type === 'small' ? 8 : 15;
+                    state.ufo.x = Math.random() < 0.5 ? -30 : canvas.width + 30;
+                    state.ufo.y = Math.random() * canvas.height;
+                    state.ufo.xv = (state.ufo.x < 0 ? 2.5 : -2.5);
+                    state.ufo.yv = (Math.random() - 0.5) * 2;
+                }
+            } else {
+                state.ufo.x += state.ufo.xv;
+                state.ufo.y += state.ufo.yv;
+                if (state.ufo.x < -100 || state.ufo.x > canvas.width + 100) {
+                    state.ufo.active = false;
+                    state.ufo.timer = 0;
+                }
+                if (Math.random() > (state.ufo.type === 'small' ? 0.96 : 0.98)) {
+                    let angle;
+                    if (state.ufo.type === 'small') {
+                        angle = Math.atan2(ship.y + ship.thrust.y*10 - state.ufo.y, ship.x + ship.thrust.x*10 - state.ufo.x);
+                    } else {
+                        angle = Math.random() * Math.PI * 2;
+                    }
+                    state.ufoBullets.push({
+                        x: state.ufo.x, y: state.ufo.y,
+                        xv: Math.cos(angle) * 4, yv: Math.sin(angle) * 4,
+                        dist: 0
+                    });
+                    playSound(state.ufo.type === 'small' ? 900 : 600, 'sawtooth', 0.1, 0.03);
+                }
+            }
+
+            if (!ship.dead) {
+                ship.a += ship.rot;
+                
+                ship.trail.push({x: ship.x, y: ship.y, a: ship.a});
+                if (ship.trail.length > SHIP_TRAIL_LEN) ship.trail.shift();
+
+                if (ship.blinkNum > 0) {
+                    ship.blinkTime--;
+                    if (ship.blinkTime <= 0) {
+                        ship.blinkTime = Math.ceil(BLINK_TIME * FPS);
+                        ship.blinkNum--;
+                    }
+                }
+
+                if (ship.thrusting) {
+                    ship.thrust.x += SHIP_THRUST * Math.cos(ship.a) / FPS;
+                    ship.thrust.y -= SHIP_THRUST * Math.sin(ship.a) / FPS;
+                    if (Math.random() > 0.8) playSound(100 + Math.random() * 50, 'sawtooth', 0.1, 0.02);
+                } else if (ship.reversing) {
+                    ship.thrust.x -= SHIP_REV_THRUST * Math.cos(ship.a) / FPS;
+                    ship.thrust.y += SHIP_REV_THRUST * Math.sin(ship.a) / FPS;
+                    if (Math.random() > 0.9) playSound(80 + Math.random() * 40, 'sawtooth', 0.08, 0.015);
+                } else {
+                    ship.thrust.x -= FRICTION * ship.thrust.x / FPS;
+                    ship.thrust.y -= FRICTION * ship.thrust.y / FPS;
+                }
+
+                ship.x += ship.thrust.x;
+                ship.y += ship.thrust.y;
+
+                if (ship.x < -ship.r) ship.x = canvas.width + ship.r;
+                else if (ship.x > canvas.width + ship.r) ship.x = -ship.r;
+                if (ship.y
