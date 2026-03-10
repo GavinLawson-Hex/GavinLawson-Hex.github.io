@@ -357,46 +357,33 @@
        API & LEADERBOARD LOGIC
        ========================================================================= */
     
-    // 🔴 IMPORTANT: Paste your Apps Script Web App URL here!
-    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzsa1WV-3OqhD5UXuy9m_Qcs9jQBgYjdDVVFHuU7Yo/dev"; 
-
-    // Mock Database for immediate preview functionality
-    let mockDatabase = [
-        { game: "PACMAN", player: "ZAP", score: 15000 },
-        { game: "GALAGA", player: "FOX", score: 42000 },
-        { game: "DONKEYKONG", player: "APE", score: 12500 },
-        { game: "CENTIPEDE", player: "BUG", score: 6000 }
-    ];
+    // 🔴 IMPORTANT: Make sure this URL ends in "/exec", NOT "/dev"! 
+    // You get the /exec URL by clicking "Deploy -> New Deployment -> Anyone"
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyvDaqR9XvP-x_ZoHVAXgTN3850lcXlgAisABorkvz67C6SUJptc2ERi7dahRlWkYUn/exec"; 
 
     async function postScoreToGoogleSheets(game, player, score) {
-        if (WEB_APP_URL === "https://script.google.com/macros/s/AKfycbzsa1WV-3OqhD5UXuy9m_Qcs9jQBgYjdDVVFHuU7Yo/dev") {
-            mockDatabase.push({ game, player, score });
-            return { status: "success", mock: true };
-        }
         try {
             const response = await fetch(WEB_APP_URL, {
-                method: "POST", headers: { "Content-Type": "text/plain;charset=utf-8" },
+                method: "POST", 
+                headers: { "Content-Type": "text/plain;charset=utf-8" },
                 body: JSON.stringify({ game, player, score })
             });
             return await response.json();
-        } catch (error) { console.error("Error posting score:", error); return { status: "error" }; }
+        } catch (error) { 
+            console.error("Error posting score:", error); 
+            return { status: "error" }; 
+        }
     }
 
     async function getScoresFromGoogleSheets(game) {
-        if (WEB_APP_URL === "https://script.google.com/macros/s/AKfycbzsa1WV-3OqhD5UXuy9m_Qcs9jQBgYjdDVVFHuU7Yo/dev") {
-            return new Promise(resolve => {
-                setTimeout(() => { 
-                    let filtered = mockDatabase.filter(row => row.game === game);
-                    filtered.sort((a, b) => b.score - a.score);
-                    resolve(filtered.slice(0, 10));
-                }, 800);
-            });
-        }
         try {
             const url = `${WEB_APP_URL}?game=${game}`;
             const response = await fetch(url);
             return await response.json();
-        } catch (error) { console.error("Error fetching leaderboard:", error); return []; }
+        } catch (error) { 
+            console.error("Error fetching leaderboard:", error); 
+            return []; 
+        }
     }
 
     // Leaderboard UI Controller
@@ -1025,6 +1012,13 @@
             cFireBtn.addEventListener('touchend', e => { keys['Space'] = false; });
         }
 
+        // Setup initial background state before starting
+        if (canvas) {
+            canvas.width = Math.floor(Math.min(window.innerWidth - 20, 600) / GRID_SIZE) * GRID_SIZE;
+            canvas.height = Math.floor((window.innerHeight - 100) / GRID_SIZE) * GRID_SIZE;
+            player = { x: canvas.width / 2 - GRID_SIZE / 2, y: canvas.height - GRID_SIZE * 3, width: GRID_SIZE, height: GRID_SIZE, speed: 4, bullets: [], fireCooldown: 0, powerups: { speed: 0, rapid: 0, spread: 0 } };
+        }
+
         return {
             start: () => {
                 window.addEventListener('keydown', handleKeyDown);
@@ -1353,6 +1347,9 @@
         bindTouch('dk-btn-left', 'ArrowLeft'); bindTouch('dk-btn-right', 'ArrowRight');
         bindTouch('dk-btn-up', 'ArrowUp'); bindTouch('dk-btn-down', 'ArrowDown'); bindTouch('dk-btn-jump', 'Space');
 
+        // Setup initial background state before starting
+        resetLevel();
+
         return {
             start: () => { window.addEventListener('keydown', handleKeyDown); window.addEventListener('keyup', handleKeyUp); draw(); },
             stop: () => { gameActive = false; cancelAnimationFrame(reqId); window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); document.getElementById('dk-start-screen').classList.remove('hidden-view'); }
@@ -1602,6 +1599,10 @@
             initGame(); loop();
         });
 
+        // Setup initial background state before starting
+        stars = Array.from({length: 50}, () => new Star());
+        initEnemies();
+
         return {
             start: () => { window.addEventListener('keydown', handleKeyDown); window.addEventListener('keyup', handleKeyUp); draw(); },
             stop: () => { gameActive = false; cancelAnimationFrame(reqId); window.removeEventListener('keydown', handleKeyDown); window.removeEventListener('keyup', handleKeyUp); document.getElementById('g-start-screen').classList.remove('hidden-view'); }
@@ -1618,13 +1619,6 @@
         let gameActive = false, reqId, deathAnimId;
         const TILE_SIZE = 24, COLS = 21, ROWS = 20;
         if(canvas) { canvas.width = COLS * TILE_SIZE; canvas.height = ROWS * TILE_SIZE; }
-
-        let score = 0, lives = 3, dotsRemaining = 0, ghostCombo = 0, readyTimer = 0, dyingTimer = 0, fruitActive = false;
-        let map = [], effects = [];
-        let pacman = {}, ghosts = [];
-        
-        let highScore = localStorage.getItem('pacman_leaderboard') ? JSON.parse(localStorage.getItem('pacman_leaderboard'))[0]?.score || 0 : 0;
-        document.getElementById('p-high-score-el').innerText = highScore;
 
         const PACMAN_SPEED = 2, GHOST_SPEED = 1.5, GHOST_FRIGHTENED_SPEED = 1;
         const UP = { x: 0, y: -1, id: 'UP' }, DOWN = { x: 0, y: 1, id: 'DOWN' }, LEFT = { x: -1, y: 0, id: 'LEFT' }, RIGHT = { x: 1, y: 0, id: 'RIGHT' }, STOP = { x: 0, y: 0, id: 'STOP' };
@@ -1854,6 +1848,15 @@
                 if (this.spawnTimer > 0) ctx.globalAlpha = 1.0;
             }
         }
+
+        // Global state initializations
+        let score = 0, lives = 3, dotsRemaining = 0, ghostCombo = 0, readyTimer = 0, dyingTimer = 0, fruitActive = false;
+        let map = rawMap.map(row => [...row]); // Properly initialize map before starting
+        let effects = [];
+        let pacman = new Pacman(10, 16); // Properly initialize pacman
+        let ghosts = [ new Ghost(10, 9, '#FF0000', 0), new Ghost(10, 10, '#FFB8FF', 1), new Ghost(9, 10, '#00FFFF', 2), new Ghost(11, 10, '#FFB852', 3) ]; // Properly initialize ghosts
+        let highScore = localStorage.getItem('pacman_leaderboard') ? JSON.parse(localStorage.getItem('pacman_leaderboard'))[0]?.score || 0 : 0;
+        document.getElementById('p-high-score-el').innerText = highScore;
 
         function updateLivesDisplay() {
             document.getElementById('p-lives-el').innerText = lives;
