@@ -160,13 +160,23 @@
         .si-btn { background: #22c55e; color: #000; border: none; padding: 15px 40px; font-size: 1.2rem; font-weight: 900; cursor: pointer; margin-top: 30px; border-radius: 4px; transition: all 0.2s;}
         .si-btn:hover { transform: scale(1.05); filter: brightness(1.2); }
         #si-lives-icons { color: #22c55e; font-size: 24px; letter-spacing: 4px;}
+
+        /* Asteroids specific */
+        #ast-box { position: relative; border: 4px solid #1e293b; background: #000; box-shadow: 0 0 50px rgba(255, 255, 255, 0.1); width: 800px; max-width: 95vw; aspect-ratio: 4/3; font-family: 'Courier New', Courier, monospace; overflow: hidden; }
+        #ast-box::after { content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.1) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.02), rgba(0, 255, 0, 0.01), rgba(0, 0, 255, 0.02)); background-size: 100% 3px, 3px 100%; pointer-events: none; z-index: 10; }
+        #ast-gameCanvas { display: block; width: 100%; height: 100%; }
+        .ast-ui-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(2, 6, 23, 0.9); z-index: 30; text-align: center; }
+        .ast-title { font-size: 4rem; margin: 0; letter-spacing: 12px; text-shadow: 0 0 15px #fff; color: #fff; }
+        .ast-btn { background: transparent; color: #fff; border: 2px solid #fff; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 30px; transition: all 0.2s; text-transform: uppercase; border-radius: 4px; }
+        .ast-btn:hover { background: #fff; color: #000; box-shadow: 0 0 20px #fff; }
+        .ast-stats { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; font-size: 24px; pointer-events: none; z-index: 5; color: #fff; }
+        #ast-livesDisplay { color: #38bdf8; letter-spacing: 5px; }
+        #ast-pauseIndicator { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; opacity: 0.3; pointer-events: none; color: #fff; }
+
     </style>
 </head>
 <body>
 
-    <!-- ========================================== -->
-    <!-- 1. MAIN MENU VIEW                          -->
-    <!-- ========================================== -->
     <div id="menu-view" class="w-full h-full flex flex-col items-center p-8 overflow-y-auto relative">
         <div class="grid-bg"></div>
 
@@ -176,67 +186,61 @@
         </header>
 
         <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10 max-w-6xl w-full">
-            <!-- Pac-Man Cabinet -->
             <div onclick="launchGame('PACMAN')" class="cabinet-card rounded-xl group" style="border-color: #FFFF00;">
                 <div class="game-icon text-yellow-400">🟡</div>
                 <h2 class="pixel-font text-lg md:text-xl text-yellow-400 mb-2">PAC-MAN</h2>
                 <div class="mt-4 px-4 py-2 bg-yellow-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">INSERT COIN</div>
             </div>
 
-            <!-- Galaga Cabinet -->
             <div onclick="launchGame('GALAGA')" class="cabinet-card rounded-xl group" style="border-color: #0000ff;">
                 <div class="game-icon text-red-500 animate-float">🚀</div>
                 <h2 class="pixel-font text-lg md:text-xl text-red-500 mb-2">GALAGA</h2>
                 <div class="mt-4 px-4 py-2 bg-red-600 text-white pixel-font text-[10px] rounded group-hover:bg-white group-hover:text-red-600 transition-colors">START MISSION</div>
             </div>
 
-            <!-- Donkey Kong Cabinet -->
             <div onclick="launchGame('DONKEYKONG')" class="cabinet-card rounded-xl group" style="border-color: #e60012;">
                 <div class="game-icon text-red-600">🦍</div>
                 <h2 class="pixel-font text-lg md:text-xl text-red-600 mb-2">DONKEY KONG</h2>
                 <div class="mt-4 px-4 py-2 bg-red-600 text-white pixel-font text-[10px] rounded group-hover:bg-white group-hover:text-red-600 transition-colors">CLIMB UP</div>
             </div>
 
-            <!-- Centipede Cabinet -->
             <div onclick="launchGame('CENTIPEDE')" class="cabinet-card rounded-xl group" style="border-color: #39ff14;">
                 <div class="game-icon text-green-400">🐛</div>
                 <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">CENTIPEDE</h2>
                 <div class="mt-4 px-4 py-2 bg-green-500 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">PLAY NOW</div>
             </div>
 
-            <!-- Pong Cabinet -->
             <div onclick="launchGame('PONG')" class="cabinet-card rounded-xl group" style="border-color: #4ade80;">
                 <div class="game-icon text-green-400">🏓</div>
                 <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">PONG</h2>
                 <div class="mt-4 px-4 py-2 bg-green-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">SERVE BALL</div>
             </div>
 
-            <!-- Breakout Cabinet -->
             <div onclick="launchGame('BREAKOUT')" class="cabinet-card rounded-xl group" style="border-color: #38bdf8;">
                 <div class="game-icon text-sky-400">🧱</div>
                 <h2 class="pixel-font text-lg md:text-xl text-sky-400 mb-2">BREAKOUT</h2>
                 <div class="mt-4 px-4 py-2 bg-sky-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">SMASH BRICKS</div>
             </div>
 
-            <!-- Space Invaders Cabinet -->
             <div onclick="launchGame('SPACEINVADERS')" class="cabinet-card rounded-xl group" style="border-color: #22c55e;">
                 <div class="game-icon text-green-500 animate-float">👾</div>
                 <h2 class="pixel-font text-lg md:text-xl text-green-500 mb-2">INVADERS</h2>
                 <div class="mt-4 px-4 py-2 bg-green-500 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">DEFEND EARTH</div>
             </div>
+
+            <div onclick="launchGame('ASTEROIDS')" class="cabinet-card rounded-xl group" style="border-color: #ffffff;">
+                <div class="game-icon text-white animate-float">☄️</div>
+                <h2 class="pixel-font text-lg md:text-xl text-white mb-2">ASTEROIDS</h2>
+                <div class="mt-4 px-4 py-2 bg-white text-black pixel-font text-[10px] rounded group-hover:bg-gray-300 transition-colors">HYPERSPACE</div>
+            </div>
         </main>
         
         <footer class="mt-auto pt-10 text-center text-gray-500 text-sm shrink-0">
-            <p class="pixel-font text-[10px]">&copy; 2024 RETRO-ARCADE OS v1.0.4</p>
+            <p class="pixel-font text-[10px]">&copy; 2024 RETRO-ARCADE OS v1.0.5</p>
         </footer>
     </div>
 
 
-    <!-- ========================================== -->
-    <!-- 2. GAME CONTAINERS                         -->
-    <!-- ========================================== -->
-
-    <!-- CENTIPEDE -->
     <div id="centipede-container" class="game-wrapper crt hidden-view">
         <div class="fixed top-4 w-full px-6 flex justify-between items-start z-10 pointer-events-none text-sm md:text-xl centipede-text">
             <div class="flex flex-col">
@@ -252,7 +256,6 @@
         <div class="relative">
             <canvas id="c-gameCanvas"></canvas>
             
-            <!-- Start Overlay -->
             <div id="c-start-overlay" class="absolute inset-0 bg-black/90 flex flex-col items-center justify-center z-20">
                 <h1 class="text-5xl text-green-400 font-bold mb-2 centipede-text">CENTIPEDE</h1>
                 <div class="text-white text-sm mb-8 space-y-2 text-center opacity-80 centipede-text">
@@ -263,7 +266,6 @@
             </div>
         </div>
 
-        <!-- Mobile Controls -->
         <div class="fixed bottom-8 w-full max-w-xs flex justify-between px-4 md:hidden pointer-events-none z-10">
             <div id="c-joystick-zone" class="w-32 h-32 bg-white/5 rounded-full border border-white/10 pointer-events-auto relative">
                 <div id="c-joystick-knob" class="w-12 h-12 bg-green-500/50 rounded-full absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2"></div>
@@ -274,7 +276,6 @@
         </div>
     </div>
 
-    <!-- DONKEY KONG -->
     <div id="dk-container" class="game-wrapper hidden-view">
         <div id="dk-box" class="crt">
             <canvas id="dk-gameCanvas" width="224" height="288"></canvas>
@@ -306,7 +307,6 @@
         </div>
     </div>
 
-    <!-- GALAGA -->
     <div id="galaga-container" class="game-wrapper crt hidden-view">
         <div id="galaga-box">
             <div id="galaga-ui">
@@ -333,7 +333,6 @@
         </div>
     </div>
 
-    <!-- PACMAN -->
     <div id="pacman-container" class="game-wrapper hidden-view">
         <div id="pacman-box">
             <canvas id="p-gameCanvas"></canvas>
@@ -365,7 +364,6 @@
         </div>
     </div>
     
-    <!-- PONG -->
     <div id="pong-container" class="game-wrapper crt hidden-view">
         <div id="pong-header">
             <div>Player 1</div>
@@ -391,7 +389,6 @@
         </div>
     </div>
 
-    <!-- BREAKOUT -->
     <div id="breakout-container" class="game-wrapper crt hidden-view">
         <div id="breakout-box">
             <div class="breakout-stats-bar">
@@ -405,7 +402,6 @@
 
             <canvas id="breakout-canvas" width="700" height="500"></canvas>
 
-            <!-- Screens -->
             <div id="breakout-start-screen" class="breakout-ui-overlay">
                 <h1 class="breakout-title">BREAKOUT</h1>
                 <p style="color: #94a3b8; max-width: 400px; line-height: 1.6;">
@@ -417,7 +413,6 @@
         </div>
     </div>
 
-    <!-- SPACE INVADERS -->
     <div id="si-container" class="game-wrapper crt hidden-view">
         <div id="si-box">
             <div id="si-header">
@@ -436,15 +431,30 @@
         </div>
     </div>
 
+    <div id="asteroids-container" class="game-wrapper hidden-view">
+        <div id="ast-box">
+            <div class="ast-stats">
+                <div>SCORE: <span id="ast-scoreVal">0000</span></div>
+                <div id="ast-livesDisplay"></div>
+            </div>
+            <div id="ast-pauseIndicator" class="hidden">PAUSED</div>
+            <canvas id="ast-gameCanvas" width="800" height="600"></canvas>
+            
+            <div id="ast-startScreen" class="ast-ui-overlay">
+                <h1 class="ast-title">ASTEROIDS</h1>
+                <p style="color: #64748b; margin-top: 10px; max-width: 500px; line-height: 1.6;">
+                    [W/S] THRUST/REVERSE • [A/D] ROTATE<br>
+                    [SPACE] FIRE • [SHIFT] HYPERSPACE • [P] PAUSE
+                </p>
+                <button class="ast-btn" onclick="if(EngineAsteroids) EngineAsteroids.startGame()">Engage</button>
+            </div>
+        </div>
+    </div>
 
-    <!-- ========================================== -->
-    <!-- 3. UNIFIED LEADERBOARD OVERLAY             -->
-    <!-- ========================================== -->
     <div id="global-leaderboard-overlay" class="fixed inset-0 hidden-view flex-col items-center justify-center">
         <h2 class="text-4xl md:text-5xl text-red-600 mb-2 text-center" id="lb-game-over-title">GAME OVER</h2>
         <p class="text-xl md:text-2xl text-zinc-300 mb-8 text-center">FINAL SCORE: <span id="lb-final-score" class="text-yellow-400">0</span></p>
         
-        <!-- State 1: Input Initials -->
         <div id="lb-input-section" class="flex flex-col items-center bg-zinc-900 p-6 md:p-8 border-4 border-zinc-700 rounded-lg mb-6 w-11/12 max-w-md">
             <p class="mb-4 text-cyan-400 text-center text-sm md:text-base animate-pulse">ENTER INITIALS TO TRANSMIT</p>
             <div class="flex space-x-4 mb-6">
@@ -455,7 +465,6 @@
             <button id="lb-submit-btn" onclick="lbSubmitScore()" class="px-6 py-3 bg-zinc-700 text-zinc-400 cursor-not-allowed transition-colors" disabled>SUBMIT SCORE</button>
         </div>
 
-        <!-- State 2: Show Top Scores -->
         <div id="lb-display-section" class="hidden-view flex-col items-center bg-zinc-900 p-6 md:p-8 border-4 border-zinc-700 rounded-lg mb-6 w-11/12 max-w-md">
             <h3 class="text-2xl text-yellow-400 mb-2" id="lb-title">TOP SATELLITE SCORES</h3>
             <p id="lb-loading-msg" class="text-zinc-500 text-xs mb-4">CONNECTING TO DATABASE...</p>
@@ -463,13 +472,11 @@
             <div class="w-full flex-1 overflow-y-auto mb-4 border-t border-b border-zinc-800 py-4 min-h-[150px]">
                 <table class="w-full text-left text-sm md:text-base">
                     <tbody id="lb-table-body">
-                        <!-- Rows injected via JS -->
-                    </tbody>
+                        </tbody>
                 </table>
             </div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="flex flex-col sm:flex-row space-y-4 sm:space-y-0 sm:space-x-4 mt-4">
             <button onclick="lbPlayAgain()" class="px-6 py-3 bg-cyan-600 hover:bg-cyan-500 text-white font-bold border-2 border-cyan-400">PLAY AGAIN</button>
             <button onclick="returnToMenu()" class="px-6 py-3 bg-black hover:bg-zinc-800 text-white border-2 border-zinc-600">MAIN MENU</button>
@@ -628,6 +635,7 @@
         if (gameName === 'PONG') { containerId = 'pong-container'; activeGameInstance = EnginePong; }
         if (gameName === 'BREAKOUT') { containerId = 'breakout-container'; activeGameInstance = EngineBreakout; }
         if (gameName === 'SPACEINVADERS') { containerId = 'si-container'; activeGameInstance = EngineSpaceInvaders; }
+        if (gameName === 'ASTEROIDS') { containerId = 'asteroids-container'; activeGameInstance = EngineAsteroids; }
 
         document.getElementById(containerId).classList.remove('hidden-view');
         activeGameInstance.start();
@@ -3144,169 +3152,4 @@
             });
             ctx.globalAlpha = 1;
 
-            // --- ARCADE COLOR OVERLAYS ---
-            // UFO Red Band
-            ctx.fillStyle = 'rgba(239, 68, 68, 0.1)';
-            ctx.fillRect(0, 40, canvas.width, 60);
-            // Player Green Band
-            ctx.fillStyle = 'rgba(34, 197, 94, 0.1)';
-            ctx.fillRect(0, 450, canvas.width, 150);
-        }
-
-        function handlePlayerDeath() {
-            state.lives--;
-            state.shake = 25;
-            createExplosion(state.player.x + 20, state.player.y + 10, '#22c55e', 40);
-            playSound(60, 'sawtooth', 0.8, 0.3);
-            updateLivesUI();
-            
-            if (state.lives <= 0) {
-                endGame();
-            } else {
-                state.running = false;
-                setTimeout(() => {
-                    state.player.x = 400;
-                    state.enemyBullets = [];
-                    state.bullets = [];
-                    state.running = true;
-                }, 1500);
-            }
-        }
-
-        function updateScore() {
-            if(scoreDisplay) scoreDisplay.innerText = state.score.toString().padStart(4, '0');
-            if (state.score > state.hiScore) {
-                state.hiScore = state.score;
-                if(hiScoreDisplay) hiScoreDisplay.innerText = state.hiScore.toString().padStart(4, '0');
-                localStorage.setItem('si_hiScore', state.hiScore);
-            }
-        }
-
-        function updateLivesUI() {
-            if(livesIcons) livesIcons.innerHTML = '▲'.repeat(state.lives);
-        }
-
-        function handleKeyDown(e) {
-            if (!state.running && !document.getElementById('si-start-screen').classList.contains('hidden-view')) {
-                if(e.code === 'Space' || e.code === 'Enter') startGame();
-            }
-            if(state.running) state.keys[e.key || e.code] = true;
-        }
-
-        function handleKeyUp(e) {
-            if(state.running) state.keys[e.key || e.code] = false;
-        }
-
-        function handleTouchStart(e) {
-            if (!state.running) return;
-            e.preventDefault();
-            const touch = e.touches[0];
-            const rect = canvas.getBoundingClientRect();
-            const touchX = touch.clientX - rect.left;
-            
-            if (touchX < rect.width / 2) {
-                state.keys['ArrowLeft'] = true;
-                state.keys['ArrowRight'] = false;
-            } else {
-                state.keys['ArrowRight'] = true;
-                state.keys['ArrowLeft'] = false;
-            }
-            state.keys[' '] = true; // Auto fire on touch
-        }
-        
-        function handleTouchEnd(e) {
-            if (!state.running) return;
-            e.preventDefault();
-            state.keys['ArrowLeft'] = false;
-            state.keys['ArrowRight'] = false;
-            state.keys[' '] = false;
-        }
-
-        function startGame() {
-            document.getElementById('si-start-screen').classList.add('hidden-view');
-            if (AudioCtx.state === 'suspended') AudioCtx.resume();
-            initStars();
-            resetGame();
-        }
-
-        function nextLevel() {
-            state.level++;
-            state.running = false;
-            playSound(1200, 'sine', 1.0, 0.1);
-            setTimeout(() => {
-                initEnemies();
-                initShields();
-                state.bullets = [];
-                state.enemyBullets = [];
-                state.running = true;
-            }, 2000);
-        }
-
-        function resetGame() {
-            state.running = true;
-            state.score = 0;
-            state.lives = 3;
-            state.level = 1;
-            state.lastBonusLifeScore = 0;
-            state.bullets = [];
-            state.enemyBullets = [];
-            state.particles = [];
-            state.enemyDirection = 1;
-            state.ufo.active = false;
-            state.ufo.timer = 0;
-            state.beat = 0;
-            updateScore();
-            updateLivesUI();
-            initEnemies();
-            initShields();
-        }
-
-        function endGame() {
-            state.running = false;
-            if (state.score > state.hiScore) {
-                state.hiScore = state.score;
-                localStorage.setItem('si_hiScore', state.hiScore);
-                if(hiScoreDisplay) hiScoreDisplay.innerText = state.hiScore.toString().padStart(4, '0');
-            }
-            triggerGlobalGameOver('SPACE INVADERS', state.score);
-        }
-
-        function loop() {
-            if (state.running) {
-                update();
-                render();
-            }
-            reqId = requestAnimationFrame(loop);
-        }
-
-        return {
-            start: () => {
-                document.getElementById('si-start-screen').classList.remove('hidden-view');
-                state.running = false;
-                render(); // Draw initial screen
-                window.addEventListener('keydown', handleKeyDown);
-                window.addEventListener('keyup', handleKeyUp);
-                if(canvas) {
-                    canvas.addEventListener('touchstart', handleTouchStart, {passive: false});
-                    canvas.addEventListener('touchend', handleTouchEnd, {passive: false});
-                }
-                loop();
-            },
-            stop: () => {
-                state.running = false;
-                cancelAnimationFrame(reqId);
-                window.removeEventListener('keydown', handleKeyDown);
-                window.removeEventListener('keyup', handleKeyUp);
-                if(canvas) {
-                    canvas.removeEventListener('touchstart', handleTouchStart);
-                    canvas.removeEventListener('touchend', handleTouchEnd);
-                }
-                document.getElementById('si-start-screen').classList.remove('hidden-view');
-            },
-            startGame: startGame
-        };
-    })();
-
-</script>
-</body>
-</html>
+            //
