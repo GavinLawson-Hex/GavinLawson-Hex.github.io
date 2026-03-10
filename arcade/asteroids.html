@@ -135,7 +135,7 @@
         const FRICTION = 0.7; 
         const SHIP_SIZE = 20;
         const SHIP_THRUST = 5.5;
-        const SHIP_REV_THRUST = 3.3; // Slower reverse
+        const SHIP_REV_THRUST = 3.3; 
         const SHIP_TURN_SPEED = 360;
         const INVULNERABLE_TIME = 3; 
         const BLINK_TIME = 0.1;
@@ -190,7 +190,7 @@
                     x: Math.random() * canvas.width,
                     y: Math.random() * canvas.height,
                     size: Math.random() * 2,
-                    p: Math.random() * 0.05 // parallax weight
+                    p: Math.random() * 0.05 
                 });
             }
         }
@@ -270,7 +270,6 @@
 
             const ship = state.ship;
 
-            // Parallax Stars
             state.stars.forEach(s => {
                 s.x -= ship.thrust.x * s.p;
                 s.y -= ship.thrust.y * s.p;
@@ -278,7 +277,6 @@
                 if (s.y < 0) s.y = canvas.height; else if (s.y > canvas.height) s.y = 0;
             });
 
-            // Extra Life Milestone
             if (state.score - state.lastExtraLifeScore >= 10000) {
                 state.lives++;
                 state.lastExtraLifeScore += 10000;
@@ -286,13 +284,11 @@
                 playSound(1200, 'sine', 0.5, 0.2);
             }
 
-            // Screen Shake
             if (state.shake > 0) {
                 state.shake *= 0.9;
                 shakeContainer.style.transform = `translate(${(Math.random()-0.5)*state.shake}px, ${(Math.random()-0.5)*state.shake}px)`;
             }
 
-            // Beat Logic
             state.beatTime--;
             if (state.beatTime <= 0) {
                 const tempo = Math.max(12, 60 - (state.score / 200));
@@ -301,14 +297,12 @@
                 state.beatLow = !state.beatLow;
             }
 
-            // Particles
             for (let i = state.particles.length - 1; i >= 0; i--) {
                 const p = state.particles[i];
                 p.x += p.xv; p.y += p.yv; p.life -= 0.025;
                 if (p.life <= 0) state.particles.splice(i, 1);
             }
 
-            // UFO Logic
             if (!state.ufo.active) {
                 state.ufo.timer++;
                 if (state.ufo.timer > (state.score > 5000 ? 500 : 800)) {
@@ -343,7 +337,6 @@
                 }
             }
 
-            // Ship Logic
             if (!ship.dead) {
                 ship.a += ship.rot;
                 
@@ -613,7 +606,6 @@
                     if (ship.reversing) {
                         ctx.fillStyle = "#ef4444";
                         ctx.beginPath();
-                        // Small thruster at the nose
                         ctx.arc(ship.x + 4/3 * ship.r * Math.cos(ship.a), ship.y - 4/3 * ship.r * Math.sin(ship.a), 2 + Math.random() * 2, 0, Math.PI * 2);
                         ctx.fill();
                     }
