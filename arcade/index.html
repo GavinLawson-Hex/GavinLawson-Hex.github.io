@@ -169,6 +169,16 @@
         #ast-pauseIndicator { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 3rem; opacity: 0.3; pointer-events: none; color: white; font-family: 'Courier New', monospace;}
         .ast-btn { background: transparent; color: #fff; border: 2px solid #fff; padding: 15px 40px; font-size: 1.2rem; font-weight: bold; cursor: pointer; margin-top: 30px; transition: all 0.2s; text-transform: uppercase; font-family: 'Courier New', monospace;}
         .ast-btn:hover { background: #fff; color: #000; box-shadow: 0 0 20px #fff; }
+
+        /* Frogger specific */
+        #frogger-box { position: relative; border: 6px solid #334155; background: #000; box-shadow: 0 0 60px rgba(74, 222, 128, 0.15); border-radius: 4px; overflow: hidden; }
+        #f-gameCanvas { display: block; }
+        .frogger-header { width: 650px; display: flex; justify-content: space-between; padding: 10px 0; font-size: 22px; font-weight: bold; color: #fff; text-shadow: 2px 2px #000; font-family: 'Courier New', monospace; z-index: 10;}
+        #f-lives-indicator { color: #4ade80; font-size: 26px; filter: drop-shadow(0 0 5px #4ade80); }
+        .frogger-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(2, 6, 23, 0.9); z-index: 30; text-align: center; }
+        .frogger-overlay h1 { font-size: 4rem; margin: 0; letter-spacing: 10px; text-shadow: 0 0 20px #4ade80; color: #4ade80; font-family: 'Courier New', monospace; }
+        .f-btn { background: transparent; color: #fff; border: 3px solid #fff; padding: 15px 45px; font-size: 1.3rem; font-weight: 900; cursor: pointer; margin-top: 30px; transition: all 0.2s; text-transform: uppercase; font-family: 'Courier New', monospace;}
+        .f-btn:hover { background: #4ade80; border-color: #4ade80; color: #000; box-shadow: 0 0 20px #4ade80; }
     </style>
 </head>
 <body>
@@ -203,7 +213,7 @@
             <div onclick="launchGame('CENTIPEDE')" class="cabinet-card rounded-xl group" style="border-color: #39ff14;">
                 <div class="game-icon text-green-400">🐛</div>
                 <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">CENTIPEDE</h2>
-                <div class="mt-4 px-4 py-2 bg-green-500 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">PLAY NOW</div>
+                <div class="mt-4 px-4 py-2 bg-green-500 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">EXTERMINATE</div>
             </div>
 
             <div onclick="launchGame('PONG')" class="cabinet-card rounded-xl group" style="border-color: #4ade80;">
@@ -228,6 +238,12 @@
                 <div class="game-icon text-white animate-float">☄️</div>
                 <h2 class="pixel-font text-lg md:text-xl text-white mb-2">ASTEROIDS</h2>
                 <div class="mt-4 px-4 py-2 bg-white text-black pixel-font text-[10px] rounded group-hover:bg-gray-300 transition-colors">HYPERSPACE</div>
+            </div>
+            
+            <div onclick="launchGame('FROGGER')" class="cabinet-card rounded-xl group" style="border-color: #4ade80;">
+                <div class="game-icon text-green-400 animate-float">🐸</div>
+                <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">FROGGER</h2>
+                <div class="mt-4 px-4 py-2 bg-green-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">HOP IN</div>
             </div>
         </main>
         
@@ -479,7 +495,23 @@
         </div>
     </div>
 
-
+    <div id="frogger-container" class="game-wrapper crt hidden-view">
+        <div class="frogger-header">
+            <div>SCORE: <span id="f-scoreVal">0000</span></div>
+            <div id="f-lives-indicator">Remaining: 🐸🐸🐸</div>
+            <div>LEVEL: <span id="f-levelVal">1</span></div>
+        </div>
+        <div id="frogger-box">
+            <canvas id="f-gameCanvas" width="650" height="700"></canvas>
+            <div id="f-startScreen" class="frogger-overlay">
+                <h1>FROGGER</h1>
+                <p style="color: #94a3b8; margin-top: 10px; font-weight: bold; font-family: 'Courier New', monospace;">[WASD/ARROWS] TO HOP • [SPACE/ENTER] TO START</p>
+                <p style="color: #f472b6; font-size: 0.8rem; margin-top: 5px; font-family: 'Courier New', monospace;">RESCUE THE PINK LADY FROG FOR BONUS POINTS!</p>
+                <button class="f-btn" onclick="if(EngineFrogger) EngineFrogger.startGame()">Start Game</button>
+            </div>
+        </div>
+    </div>
+    
 <script>
     /* =========================================================================
        API & LEADERBOARD LOGIC
@@ -632,6 +664,7 @@
         if (gameName === 'BREAKOUT') { containerId = 'breakout-container'; activeGameInstance = EngineBreakout; }
         if (gameName === 'SPACEINVADERS') { containerId = 'si-container'; activeGameInstance = EngineSpaceInvaders; }
         if (gameName === 'ASTEROIDS') { containerId = 'ast-container'; activeGameInstance = EngineAsteroids; }
+        if (gameName === 'FROGGER') { containerId = 'frogger-container'; activeGameInstance = EngineFrogger; }
 
         document.getElementById(containerId).classList.remove('hidden-view');
         activeGameInstance.start();
@@ -3907,6 +3940,450 @@
                 window.removeEventListener('keydown', handleKeyDown);
                 window.removeEventListener('keyup', handleKeyUp);
                 document.getElementById('ast-startScreen').classList.remove('hidden-view');
+            },
+            startGame: startGame
+        };
+    })();
+
+    /* =========================================================================
+       GAME 9: FROGGER
+       ========================================================================= */
+    const EngineFrogger = (function() {
+        const canvas = document.getElementById('f-gameCanvas');
+        const ctx = canvas ? canvas.getContext('2d') : null;
+        const startScreen = document.getElementById('f-startScreen');
+        const scoreDisplay = document.getElementById('f-scoreVal');
+        const levelDisplay = document.getElementById('f-levelVal');
+        const livesDisplay = document.getElementById('f-lives-indicator');
+        const shakeContainer = document.getElementById('frogger-box');
+
+        const GRID = 50;
+        const COLS = 13; 
+        const ROWS = 14; 
+
+        const AudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(freq, type, duration, vol = 0.1) {
+            if (AudioCtx.state === 'suspended') return;
+            const osc = AudioCtx.createOscillator();
+            const gain = AudioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, AudioCtx.currentTime);
+            osc.connect(gain); gain.connect(AudioCtx.destination);
+            gain.gain.setValueAtTime(vol, AudioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.0001, AudioCtx.currentTime + duration);
+            osc.start(); osc.stop(AudioCtx.currentTime + duration);
+        }
+
+        let state = {
+            running: false,
+            score: 0,
+            lives: 3,
+            level: 1,
+            shake: 0,
+            timer: 80,
+            timerMax: 80,
+            frog: { x: 6, y: 12, dir: 'up', jumpAnim: 0, hasLady: false },
+            ladyFrog: { active: false, lane: 0, objIndex: 0 },
+            snake: { active: false, x: 0, dir: 1, speed: 1.5 },
+            lanes: [],
+            homes: [false, false, false, false, false, false],
+            homeHazards: [null, null, null, null, null, null],
+            hazardTimer: 0,
+            frame: 0
+        };
+
+        let reqId;
+
+        function createLane(y, type, subType, speed, color) {
+            return {
+                y: y * GRID, type: type, subType: subType, speed: speed, color: color, objects: []
+            };
+        }
+
+        function initLanes() {
+            state.lanes = [];
+            const speedScale = 0.65 + (state.level - 1) * 0.22;
+            
+            state.lanes[11] = createLane(11, 'road', 'truck', -1.5 * speedScale, '#ef4444'); 
+            state.lanes[10] = createLane(10, 'road', 'car', 2.0 * speedScale, '#facc15');  
+            state.lanes[9] = createLane(9, 'road', 'car', -1.2 * speedScale, '#3b82f6');  
+            state.lanes[8] = createLane(8, 'road', 'race', 4.5 * speedScale, '#ec4899');   
+            state.lanes[7] = createLane(7, 'road', 'truck', -1.8 * speedScale, '#94a3b8');  
+
+            state.lanes[5] = createLane(5, 'water', 'log', 1.4 * speedScale, '#78350f');   
+            state.lanes[4] = createLane(4, 'water', 'turtle', -2.2 * speedScale, '#1e40af');  
+            state.lanes[3] = createLane(3, 'water', 'log', 3.2 * speedScale, '#78350f');   
+            state.lanes[2] = createLane(2, 'water', 'turtle', -1.5 * speedScale, '#1e40af');  
+            state.lanes[1] = createLane(1, 'water', 'log', 2.0 * speedScale, '#78350f');   
+
+            for(let i=0; i<state.lanes.length; i++) {
+                if(!state.lanes[i]) continue;
+                const lane = state.lanes[i];
+                const count = lane.subType === 'truck' ? 2 : 3;
+                for(let j=0; j<count; j++) {
+                    lane.objects.push({
+                        x: j * (canvas.width / count),
+                        w: lane.subType === 'truck' ? GRID * 2.8 : (lane.subType === 'log' ? GRID * 3.2 : GRID * 1.5),
+                        diveState: 0,
+                        isDiver: lane.subType === 'turtle' ? (Math.random() > 0.4) : false 
+                    });
+                }
+            }
+        }
+
+        function update() {
+            if (!state.running) return;
+            state.frame++;
+
+            state.timer -= 0.016; 
+            if (state.timer <= 0) handleDeath("Time's Up!");
+
+            if (state.shake > 0) {
+                state.shake *= 0.85;
+                shakeContainer.style.transform = `translate(${(Math.random()-0.5)*state.shake}px, ${(Math.random()-0.5)*state.shake}px)`;
+            } else {
+                shakeContainer.style.transform = 'none';
+            }
+
+            if (!state.ladyFrog.active && !state.frog.hasLady && Math.random() > 0.99) {
+                const logLanes = [1, 3, 5];
+                state.ladyFrog.lane = logLanes[Math.floor(Math.random() * logLanes.length)];
+                const laneObj = state.lanes[state.ladyFrog.lane];
+                if (laneObj) {
+                    state.ladyFrog.objIndex = Math.floor(Math.random() * laneObj.objects.length);
+                    state.ladyFrog.active = true;
+                }
+            }
+
+            if (state.level >= 2) {
+                if (!state.snake.active && Math.random() > 0.99) {
+                    state.snake.active = true;
+                    state.snake.x = state.frame % 2 === 0 ? -GRID : canvas.width;
+                    state.snake.dir = state.snake.x < 0 ? 1 : -1;
+                }
+                if (state.snake.active) {
+                    state.snake.x += state.snake.speed * state.snake.dir;
+                    if (state.snake.x < -GRID*2 || state.snake.x > canvas.width + GRID) state.snake.active = false;
+                    if (state.frog.y === 6 && Math.abs((state.frog.x * GRID) - state.snake.x) < 30) handleDeath("SNAKE!");
+                }
+            }
+
+            const hazardThreshold = Math.max(60, 220 - (state.level * 30));
+            state.hazardTimer++;
+            if (state.hazardTimer > hazardThreshold) {
+                state.hazardTimer = 0;
+                state.homeHazards = state.homeHazards.map(() => null);
+                const emptySlots = state.homes.map((h, i) => h ? null : i).filter(i => i !== null);
+                if (emptySlots.length > 0 && Math.random() > (0.75 - state.level * 0.08)) {
+                    const idx = emptySlots[Math.floor(Math.random() * emptySlots.length)];
+                    state.homeHazards[idx] = Math.random() > (0.6 - state.level * 0.1) ? 'croc' : 'fly';
+                }
+            }
+
+            state.lanes.forEach(lane => {
+                if(!lane) return;
+                lane.objects.forEach(obj => {
+                    obj.x += lane.speed;
+                    if (lane.speed > 0 && obj.x > canvas.width) obj.x = -obj.w;
+                    if (lane.speed < 0 && obj.x < -obj.w) obj.x = canvas.width;
+
+                    if (lane.subType === 'turtle') {
+                        if (obj.isDiver) {
+                            const cycleTime = Math.max(2500, 5000 - (state.level * 300));
+                            const cycle = (Date.now() + obj.x * 2) % cycleTime;
+                            if (cycle < cycleTime * 0.6) obj.diveState = 0;
+                            else if (cycle < cycleTime * 0.7) obj.diveState = 1;
+                            else if (cycle < cycleTime * 0.9) obj.diveState = 2; 
+                            else obj.diveState = 3;
+                        } else {
+                            obj.diveState = 0;
+                        }
+                    }
+                });
+            });
+
+            const frogGridY = state.frog.y;
+            const currentLane = state.lanes[frogGridY];
+            let onPlatform = false;
+            
+            if (currentLane) {
+                const frogRealX = state.frog.x * GRID;
+                currentLane.objects.forEach((obj, idx) => {
+                    if (frogRealX + 5 < obj.x + obj.w && frogRealX + 45 > obj.x) {
+                        if (currentLane.type === 'road') handleDeath("Splatted!");
+                        if (currentLane.type === 'water') {
+                            if (currentLane.subType === 'turtle' && obj.diveState === 2) {
+                                // Submerged - death handled naturally below
+                            } else {
+                                onPlatform = true;
+                                state.frog.x += currentLane.speed / GRID;
+                                if (state.ladyFrog.active && !state.frog.hasLady && state.ladyFrog.lane === frogGridY && state.ladyFrog.objIndex === idx) {
+                                    state.frog.hasLady = true;
+                                    state.ladyFrog.active = false;
+                                    playSound(1200, 'sine', 0.2);
+                                }
+                            }
+                        }
+                    }
+                });
+                if (currentLane.type === 'water' && !onPlatform) handleDeath("Drowned!");
+            }
+
+            if (onPlatform) {
+                if (state.frog.x > COLS) state.frog.x -= COLS;
+                if (state.frog.x < 0) state.frog.x += COLS;
+            } else {
+                if (state.frog.x < -0.2 || state.frog.x > COLS - 0.8) handleDeath("Swept Away!");
+            }
+
+            if (state.frog.y === 0) {
+                const targetX = Math.round(state.frog.x);
+                if (targetX % 2 !== 0 && targetX >= 1 && targetX <= 11) {
+                    const homeIndex = (targetX - 1) / 2;
+                    if (!state.homes[homeIndex]) {
+                        const hazard = state.homeHazards[homeIndex];
+                        if (hazard === 'croc') handleDeath("Chomped!");
+                        else {
+                            if (hazard === 'fly') { state.score += 200; playSound(1000, 'sine', 0.1); }
+                            state.homes[homeIndex] = true;
+                            state.score += 50 + (state.frog.hasLady ? 200 : 0) + Math.floor(state.timer * 15);
+                            updateScoreUI();
+                            playSound(850, 'sine', 0.25);
+                            resetFrog();
+                            if (state.homes.every(h => h)) nextLevel();
+                        }
+                    } else {
+                        state.frog.y = 1; 
+                    }
+                } else {
+                    handleDeath("Hit the wall!");
+                }
+            }
+
+            if (state.frog.jumpAnim > 0) state.frog.jumpAnim -= 0.12;
+        }
+
+        function handleDeath(msg) {
+            state.lives--;
+            state.shake = 25;
+            updateLivesUI();
+            playSound(120, 'sawtooth', 0.7, 0.2);
+            state.running = false;
+            
+            if (state.lives <= 0) {
+                setTimeout(() => triggerGlobalGameOver('FROGGER', state.score), 1000);
+            } else {
+                setTimeout(() => {
+                    resetFrog();
+                    state.running = true;
+                }, 1200);
+            }
+        }
+
+        function resetFrog() {
+            state.frog = { x: 6, y: 12, dir: 'up', jumpAnim: 0, hasLady: false };
+            state.timerMax = Math.max(25, 80 - (state.level - 1) * 10);
+            state.timer = state.timerMax;
+        }
+
+        function drawFrog(x, y, dir, jump, isLady = false) {
+            ctx.save();
+            ctx.translate(x * GRID + GRID/2, y * GRID + GRID/2);
+            if (dir === 'down') ctx.rotate(Math.PI);
+            if (dir === 'left') ctx.rotate(-Math.PI/2);
+            if (dir === 'right') ctx.rotate(Math.PI/2);
+            const s = GRID * 0.7 * (1 + jump);
+            const breath = Math.sin(Date.now() * 0.01) * 2;
+            
+            ctx.fillStyle = isLady ? '#f472b6' : (state.frog.hasLady ? '#d946ef' : '#22c55e');
+            ctx.fillRect(-s/1.8, s/4, s/4, s/3);
+            ctx.fillRect(s/4, s/4, s/4, s/3);
+            ctx.beginPath(); ctx.roundRect(-s/2, -s/2, s, s + breath, 8); ctx.fill();
+            ctx.fillStyle = 'white';
+            ctx.beginPath(); ctx.arc(-s/3, -s/3, s/5, 0, 2*Math.PI); ctx.fill();
+            ctx.beginPath(); ctx.arc(s/3, -s/3, s/5, 0, 2*Math.PI); ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.beginPath(); ctx.arc(-s/3, -s/2.8, s/10, 0, 2*Math.PI); ctx.fill();
+            ctx.beginPath(); ctx.arc(s/3, -s/2.8, s/10, 0, 2*Math.PI); ctx.fill();
+            ctx.restore();
+        }
+
+        function drawTurtle(x, y, obj) {
+            const dive = obj.diveState;
+            ctx.save();
+            ctx.translate(x, y);
+            const baseAlpha = dive === 2 ? 0.35 : (dive === 0 ? 1 : 0.6);
+            ctx.globalAlpha = baseAlpha;
+
+            if (obj.isDiver && dive >= 1) {
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.6)';
+                ctx.lineWidth = 2;
+                for(let i=0; i<3; i++) {
+                    ctx.beginPath(); 
+                    ctx.arc(GRID/4 + (i*15), GRID/4 + Math.sin(state.frame*0.1+i)*5, 3, 0, Math.PI*2); 
+                    ctx.stroke();
+                }
+            }
+
+            for(let t=0; t < obj.w/GRID; t++) {
+                const offX = t * GRID;
+                ctx.fillStyle = '#1e3a8a';
+                ctx.beginPath(); ctx.arc(offX + GRID/4, GRID/4, GRID/6, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(offX + 3*GRID/4, GRID/4, GRID/6, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(offX + GRID/4, 3*GRID/4, GRID/6, 0, Math.PI*2); ctx.fill();
+                ctx.beginPath(); ctx.arc(offX + 3*GRID/4, 3*GRID/4, GRID/6, 0, Math.PI*2); ctx.fill();
+                ctx.fillStyle = dive === 2 ? '#3b82f6' : '#2563eb';
+                ctx.beginPath(); ctx.arc(offX + GRID/2, GRID/2, GRID/2.2, 0, Math.PI*2); ctx.fill();
+                ctx.strokeStyle = '#1e40af'; ctx.lineWidth = 3; ctx.strokeRect(offX + GRID/2.8, GRID/2.8, GRID/4, GRID/4);
+            }
+            ctx.restore();
+        }
+
+        function drawCar(x, y, w, color, type, speed) {
+            ctx.save();
+            ctx.translate(x, y);
+            ctx.fillStyle = '#000';
+            ctx.fillRect(5, 5, 10, 5); ctx.fillRect(w-15, 5, 10, 5);
+            ctx.fillRect(5, GRID-10, 10, 5); ctx.fillRect(w-15, GRID-10, 10, 5);
+            ctx.fillStyle = color;
+            ctx.beginPath(); ctx.roundRect(0, 8, w, GRID-16, 6); ctx.fill();
+            ctx.fillStyle = 'rgba(255, 255, 255, 0.4)';
+            const winX = speed > 0 ? w-25 : 5;
+            ctx.fillRect(winX, 12, 20, GRID-24); 
+            ctx.fillStyle = '#fef08a'; 
+            const lightX = speed > 0 ? w-5 : 0;
+            ctx.beginPath(); ctx.arc(lightX, 15, 4, 0, Math.PI*2); ctx.fill();
+            ctx.beginPath(); ctx.arc(lightX, GRID-15, 4, 0, Math.PI*2); ctx.fill();
+            ctx.restore();
+        }
+
+        function render() {
+            if(!ctx) return;
+            ctx.fillStyle = '#000';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = '#14532d'; ctx.fillRect(0, 12 * GRID, canvas.width, GRID);
+            ctx.fillRect(0, 6 * GRID, canvas.width, GRID);
+            ctx.fillStyle = '#1e3a8a'; ctx.fillRect(0, 1 * GRID, canvas.width, 5 * GRID);
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            for(let i=0; i<8; i++) {
+                let ox = (state.frame * 2 + i * 200) % canvas.width;
+                ctx.beginPath(); ctx.moveTo(ox, 1.2 * GRID + i*25); ctx.lineTo(ox + 80, 1.2 * GRID + i*25); ctx.stroke();
+            }
+            ctx.fillStyle = '#064e3b'; ctx.fillRect(0, 0, canvas.width, GRID);
+
+            for(let i=0; i<6; i++) {
+                const hX = (i * 2 + 1) * GRID;
+                ctx.fillStyle = '#000'; ctx.fillRect(hX, 0, GRID, GRID);
+                if (state.homes[i]) drawFrog(i * 2 + 1, 0, 'up', 0);
+                else {
+                    const haz = state.homeHazards[i];
+                    if (haz === 'croc') {
+                        ctx.fillStyle = '#15803d'; ctx.beginPath(); ctx.ellipse(hX+GRID/2, GRID/2, GRID/2.5, GRID/4, 0, 0, Math.PI*2); ctx.fill();
+                        ctx.fillStyle = '#facc15'; ctx.fillRect(hX+20, 20, 4, 4); ctx.fillRect(hX+30, 20, 4, 4);
+                    } else if (haz === 'fly') {
+                        const pulse = Math.sin(state.frame*0.1)*5;
+                        ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(hX+GRID/2, GRID/2, 4 + pulse/2, 0, Math.PI*2); ctx.fill();
+                    }
+                }
+            }
+
+            state.lanes.forEach((lane, lIdx) => {
+                if(!lane) return;
+                lane.objects.forEach((obj, oIdx) => {
+                    if(lane.type === 'road') drawCar(obj.x, lane.y, obj.w, lane.color, lane.subType, lane.speed);
+                    else if (lane.subType === 'log') {
+                        ctx.fillStyle = '#713f12'; ctx.beginPath(); ctx.roundRect(obj.x, lane.y+5, obj.w, GRID-10, 12); ctx.fill();
+                        if (state.ladyFrog.active && state.ladyFrog.lane === lIdx && state.ladyFrog.objIndex === oIdx) {
+                            drawFrog(obj.x/GRID + (obj.w/GRID/2)-0.5, lane.y/GRID, 'up', 0, true);
+                        }
+                    } else if (lane.subType === 'turtle') drawTurtle(obj.x, lane.y, obj);
+                });
+            });
+
+            if (state.snake.active) {
+                ctx.fillStyle = '#ccff00';
+                for(let i=0; i<6; i++) {
+                    ctx.beginPath();
+                    ctx.arc(state.snake.x - (i*8*state.snake.dir), 6*GRID + GRID/2 + Math.sin(state.frame*0.2 + i)*6, 6-i, 0, Math.PI*2);
+                    ctx.fill();
+                }
+            }
+
+            drawFrog(state.frog.x, state.frog.y, state.frog.dir, state.frog.jumpAnim);
+            const timerW = (state.timer / state.timerMax) * (canvas.width - 40);
+            ctx.fillStyle = state.timer < 15 ? '#ef4444' : '#facc15';
+            ctx.beginPath(); ctx.roundRect(20, canvas.height - 30, timerW, 20, 4); ctx.fill();
+            ctx.fillStyle = '#fff'; ctx.font = 'bold 14px Courier'; ctx.fillText("TIME", 25, canvas.height - 38);
+        }
+
+        function handleKeyDown(e) {
+            if (!state.running) {
+                if ((e.key === "Enter" || e.key === " ") && !startScreen.classList.contains('hidden-view')) {
+                    startGame();
+                }
+                return;
+            }
+            if([" ", "ArrowUp", "ArrowDown", "ArrowLeft", "ArrowRight"].includes(e.key)) e.preventDefault();
+
+            let moved = false; const oldY = state.frog.y;
+            switch(e.key.toLowerCase()) {
+                case 'w': case 'arrowup': if(state.frog.y > 0) { state.frog.y--; state.frog.dir = 'up'; moved = true; } break;
+                case 's': case 'arrowdown': if(state.frog.y < 12) { state.frog.y++; state.frog.dir = 'down'; moved = true; } break;
+                case 'a': case 'arrowleft': state.frog.x--; state.frog.dir = 'left'; moved = true; break;
+                case 'd': case 'arrowright': state.frog.x++; state.frog.dir = 'right'; moved = true; break;
+            }
+            if(moved) {
+                state.frog.jumpAnim = 0.45; playSound(480, 'sine', 0.1, 0.04);
+                if (state.frog.y < oldY) state.score += 10; updateScoreUI();
+            }
+        }
+
+        function startGame() { 
+            startScreen.classList.add('hidden-view'); 
+            if (AudioCtx.state === 'suspended') AudioCtx.resume(); 
+            
+            state.running = true; state.score = 0; state.lives = 3; state.level = 1;
+            state.homes = state.homes.map(() => false);
+            updateScoreUI(); updateLivesUI(); initLanes(); resetFrog();
+            
+            if (reqId) cancelAnimationFrame(reqId);
+            loop();
+        }
+
+        function nextLevel() {
+            state.level++; state.homes = state.homes.map(() => false);
+            state.score += 1000; initLanes(); resetFrog();
+            playSound(750, 'sine', 0.6); updateScoreUI(); levelDisplay.innerText = state.level;
+        }
+
+        function updateScoreUI() { 
+            if(scoreDisplay) scoreDisplay.innerText = state.score.toString().padStart(4, '0'); 
+        }
+
+        function updateLivesUI() { 
+            if(livesDisplay) livesDisplay.innerText = 'Remaining: ' + '🐸'.repeat(Math.max(0, state.lives)); 
+        }
+
+        function loop() {
+            if (state.running) {
+                update();
+                render();
+            }
+            reqId = requestAnimationFrame(loop);
+        }
+
+        return {
+            start: () => {
+                startScreen.classList.remove('hidden-view');
+                state.running = false;
+                render(); // Draw initial screen
+                window.addEventListener('keydown', handleKeyDown, {passive: false});
+            },
+            stop: () => {
+                state.running = false;
+                cancelAnimationFrame(reqId);
+                window.removeEventListener('keydown', handleKeyDown);
+                startScreen.classList.remove('hidden-view');
             },
             startGame: startGame
         };
