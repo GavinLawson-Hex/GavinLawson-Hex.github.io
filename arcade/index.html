@@ -34,32 +34,41 @@
         .neon-text-blue { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-blue), 0 0 30px var(--neon-blue), 0 0 40px var(--neon-blue); }
 
         /* Menu Cabinet Cards */
-        .cabinet-card {
-            background: #111;
-            border: 4px solid #333;
-            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            position: relative;
-            overflow: hidden;
-            cursor: pointer;
-            text-decoration: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            aspect-ratio: 3/4;
-        }
-        .cabinet-card:hover {
-            transform: scale(1.05) translateY(-10px);
-            border-color: var(--neon-blue) !important;
-            box-shadow: 0 0 20px var(--neon-blue);
-        }
-        .cabinet-card::after {
-            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(transparent 0%, rgba(0, 255, 255, 0.1) 100%);
-            opacity: 0; transition: opacity 0.3s;
-        }
-        .cabinet-card:hover::after { opacity: 1; }
-        .game-icon { font-size: 4rem; margin-bottom: 1rem; filter: drop-shadow(0 0 10px currentColor); }
+        /* Optimized Menu Cabinet Cards for 5/4 Layout */
+.cabinet-card {
+    background: #111;
+    border: 4px solid #333;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    position: relative;
+    overflow: hidden;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    aspect-ratio: 3/4;
+    /* Base width for smaller screens */
+    width: 100%; 
+}
+
+@media (min-width: 640px) {
+    .cabinet-card { width: calc(50% - 1.5rem); }
+}
+
+@media (min-width: 1024px) {
+    .cabinet-card { 
+        /* This calc forces exactly 5 per row when combined with gap-10 */
+        flex: 0 1 calc(20% - 2rem); 
+        min-width: 180px;
+    }
+}
+
+.cabinet-card:hover {
+    transform: scale(1.05) translateY(-10px);
+    border-color: var(--neon-blue) !important;
+    box-shadow: 0 0 20px var(--neon-blue);
+}
 
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         .animate-float { animation: float 3s ease-in-out infinite; }
@@ -191,61 +200,61 @@
             <p class="text-sm md:text-lg text-cyan-400 tracking-widest uppercase">Select your game to start</p>
         </header>
 
-        <main class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 md:gap-10 max-w-6xl w-full">
-            <div onclick="launchGame('PACMAN')" class="cabinet-card rounded-xl group" style="border-color: #FFFF00;">
-                <div class="game-icon text-yellow-400">🟡</div>
-                <h2 class="pixel-font text-lg md:text-xl text-yellow-400 mb-2">PAC-MAN</h2>
-                <div class="mt-4 px-4 py-2 bg-yellow-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">INSERT COIN</div>
-            </div>
+        <main class="flex flex-wrap justify-center gap-6 md:gap-10 max-w-7xl w-full">
+    <div onclick="launchGame('PACMAN')" class="cabinet-card rounded-xl group" style="border-color: #FFFF00;">
+        <div class="game-icon text-yellow-400">🟡</div>
+        <h2 class="pixel-font text-lg md:text-xl text-yellow-400 mb-2">PAC-MAN</h2>
+        <div class="mt-4 px-4 py-2 bg-yellow-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">INSERT COIN</div>
+    </div>
 
-            <div onclick="launchGame('GALAGA')" class="cabinet-card rounded-xl group" style="border-color: #0000ff;">
-                <div class="game-icon text-red-500 animate-float">🚀</div>
-                <h2 class="pixel-font text-lg md:text-xl text-red-500 mb-2">GALAGA</h2>
-                <div class="mt-4 px-4 py-2 bg-red-600 text-white pixel-font text-[10px] rounded group-hover:bg-white group-hover:text-red-600 transition-colors">START MISSION</div>
-            </div>
+    <div onclick="launchGame('GALAGA')" class="cabinet-card rounded-xl group" style="border-color: #0000ff;">
+        <div class="game-icon text-red-500 animate-float">🚀</div>
+        <h2 class="pixel-font text-lg md:text-xl text-red-500 mb-2">GALAGA</h2>
+        <div class="mt-4 px-4 py-2 bg-red-600 text-white pixel-font text-[10px] rounded group-hover:bg-white group-hover:text-red-600 transition-colors">START MISSION</div>
+    </div>
 
-            <div onclick="launchGame('DONKEYKONG')" class="cabinet-card rounded-xl group" style="border-color: #e60012;">
-                <div class="game-icon text-red-600">🦍</div>
-                <h2 class="pixel-font text-lg md:text-xl text-red-600 mb-2">DONKEY KONG</h2>
-                <div class="mt-4 px-4 py-2 bg-red-600 text-white pixel-font text-[10px] rounded group-hover:bg-white group-hover:text-red-600 transition-colors">CLIMB UP</div>
-            </div>
+    <div onclick="launchGame('DONKEYKONG')" class="cabinet-card rounded-xl group" style="border-color: #e60012;">
+        <div class="game-icon text-red-600">🦍</div>
+        <h2 class="pixel-font text-lg md:text-xl text-red-600 mb-2">DONKEY KONG</h2>
+        <div class="mt-4 px-4 py-2 bg-red-600 text-white pixel-font text-[10px] rounded group-hover:bg-white group-hover:text-red-600 transition-colors">CLIMB UP</div>
+    </div>
 
-            <div onclick="launchGame('CENTIPEDE')" class="cabinet-card rounded-xl group" style="border-color: #39ff14;">
-                <div class="game-icon text-green-400">🐛</div>
-                <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">CENTIPEDE</h2>
-                <div class="mt-4 px-4 py-2 bg-green-500 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">EXTERMINATE</div>
-            </div>
+    <div onclick="launchGame('CENTIPEDE')" class="cabinet-card rounded-xl group" style="border-color: #39ff14;">
+        <div class="game-icon text-green-400">🐛</div>
+        <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">CENTIPEDE</h2>
+        <div class="mt-4 px-4 py-2 bg-green-500 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">EXTERMINATE</div>
+    </div>
 
-            <div onclick="launchGame('PONG')" class="cabinet-card rounded-xl group" style="border-color: #4ade80;">
-                <div class="game-icon text-green-400">🏓</div>
-                <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">PONG</h2>
-                <div class="mt-4 px-4 py-2 bg-green-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">SERVE BALL</div>
-            </div>
+    <div onclick="launchGame('PONG')" class="cabinet-card rounded-xl group" style="border-color: #4ade80;">
+        <div class="game-icon text-green-400">🏓</div>
+        <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">PONG</h2>
+        <div class="mt-4 px-4 py-2 bg-green-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">SERVE BALL</div>
+    </div>
 
-            <div onclick="launchGame('BREAKOUT')" class="cabinet-card rounded-xl group" style="border-color: #38bdf8;">
-                <div class="game-icon text-sky-400">🧱</div>
-                <h2 class="pixel-font text-lg md:text-xl text-sky-400 mb-2">BREAKOUT</h2>
-                <div class="mt-4 px-4 py-2 bg-sky-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">SMASH BRICKS</div>
-            </div>
+    <div onclick="launchGame('BREAKOUT')" class="cabinet-card rounded-xl group" style="border-color: #38bdf8;">
+        <div class="game-icon text-sky-400">🧱</div>
+        <h2 class="pixel-font text-lg md:text-xl text-sky-400 mb-2">BREAKOUT</h2>
+        <div class="mt-4 px-4 py-2 bg-sky-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">SMASH BRICKS</div>
+    </div>
 
-            <div onclick="launchGame('SPACEINVADERS')" class="cabinet-card rounded-xl group" style="border-color: #22c55e;">
-                <div class="game-icon text-green-500 animate-float">👾</div>
-                <h2 class="pixel-font text-lg md:text-xl text-green-500 mb-2">INVADERS</h2>
-                <div class="mt-4 px-4 py-2 bg-green-500 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">DEFEND EARTH</div>
-            </div>
-            
-            <div onclick="launchGame('ASTEROIDS')" class="cabinet-card rounded-xl group" style="border-color: #ffffff;">
-                <div class="game-icon text-white animate-float">☄️</div>
-                <h2 class="pixel-font text-lg md:text-xl text-white mb-2">ASTEROIDS</h2>
-                <div class="mt-4 px-4 py-2 bg-white text-black pixel-font text-[10px] rounded group-hover:bg-gray-300 transition-colors">HYPERSPACE</div>
-            </div>
-            
-            <div onclick="launchGame('FROGGER')" class="cabinet-card rounded-xl group" style="border-color: #4ade80;">
-                <div class="game-icon text-green-400 animate-float">🐸</div>
-                <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">FROGGER</h2>
-                <div class="mt-4 px-4 py-2 bg-green-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">HOP IN</div>
-            </div>
-        </main>
+    <div onclick="launchGame('SPACEINVADERS')" class="cabinet-card rounded-xl group" style="border-color: #22c55e;">
+        <div class="game-icon text-green-500 animate-float">👾</div>
+        <h2 class="pixel-font text-lg md:text-xl text-green-500 mb-2">INVADERS</h2>
+        <div class="mt-4 px-4 py-2 bg-green-500 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">DEFEND EARTH</div>
+    </div>
+
+    <div onclick="launchGame('ASTEROIDS')" class="cabinet-card rounded-xl group" style="border-color: #ffffff;">
+        <div class="game-icon text-white animate-float">☄️</div>
+        <h2 class="pixel-font text-lg md:text-xl text-white mb-2">ASTEROIDS</h2>
+        <div class="mt-4 px-4 py-2 bg-white text-black pixel-font text-[10px] rounded group-hover:bg-gray-300 transition-colors">HYPERSPACE</div>
+    </div>
+
+    <div onclick="launchGame('FROGGER')" class="cabinet-card rounded-xl group" style="border-color: #4ade80;">
+        <div class="game-icon text-green-400 animate-float">🐸</div>
+        <h2 class="pixel-font text-lg md:text-xl text-green-400 mb-2">FROGGER</h2>
+        <div class="mt-4 px-4 py-2 bg-green-400 text-black pixel-font text-[10px] rounded group-hover:bg-white transition-colors">HOP IN</div>
+    </div>
+</main>
         
         <footer class="mt-auto pt-10 text-center text-gray-500 text-sm shrink-0">
             <p class="pixel-font text-[10px]">&copy; 2024 RETRO-ARCADE OS v1.0.5</p>
