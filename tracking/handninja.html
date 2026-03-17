@@ -168,9 +168,9 @@
 
     hands.setOptions({
         maxNumHands: 1,
-        modelComplexity: 1,
-        minDetectionConfidence: 0.6,
-        minTrackingConfidence: 0.6,
+        modelComplexity: 0, // Lower complexity for much faster tracking performance
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5,
         selfieMode: true // Essential for the mirrored display
     });
 
@@ -199,7 +199,6 @@
     });
 
     function resizeCanvas() {
-        // Ensure dimensions are valid
         const w = window.innerWidth || 100;
         const h = window.innerHeight || 100;
         
@@ -210,7 +209,6 @@
         
         drawDojoFloor(bgCtx, true);
         
-        // Final guard against 0 width/height before drawImage
         if (!isGameRunning && bgCanvas.width > 0 && bgCanvas.height > 0) {
             canvasCtx.drawImage(bgCanvas, 0, 0);
         }
@@ -244,22 +242,13 @@
         const canvasWidth = canvasElement.width || window.innerWidth || 1280;
         const canvasHeight = canvasElement.height || window.innerHeight || 720;
 
-        // Calculate scaling to match object-fit: cover
         const scale = Math.max(canvasWidth / videoWidth, canvasHeight / videoHeight);
-        
-        // This calculates the position of the sensor's origin in canvas space
         const sensorXAt0 = (canvasWidth - videoWidth * scale) / 2;
         const sensorYAt0 = (canvasHeight - videoHeight * scale) / 2;
 
-        // Map normalized landmark to the correctly scaled and positioned canvas coordinate
         const mappedX = sensorXAt0 + (landmark.x * videoWidth * scale);
         const mappedY = sensorYAt0 + (landmark.y * videoHeight * scale);
 
-        // Mirror check: Since the canvas is mirrored with CSS scaleX(-1), 
-        // to draw a point at screen-left, we need to draw at canvas-right.
-        // landmark.x = 0 is user-left (screen-left) because of selfieMode: true.
-        // So landmark.x = 0 -> mappedX near 0.
-        // To show up on screen-left, the canvas needs the point at canvasWidth - mappedX.
         return {
             x: canvasWidth - mappedX,
             y: mappedY
@@ -400,7 +389,6 @@
     function gameLoop() {
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
         
-        // Background Decay logic for performance
         bgCtx.save();
         bgCtx.globalAlpha = 0.0015; 
         bgCtx.fillStyle = '#3d2b1f';
@@ -409,7 +397,6 @@
         drawDojoFloor(bgCtx, false);
 
         canvasCtx.globalAlpha = 1;
-        // Safeguard for drawing background
         if (bgCanvas.width > 0 && bgCanvas.height > 0) {
             canvasCtx.drawImage(bgCanvas, 0, 0);
         }
@@ -539,15 +526,18 @@
     async function initVision() {
         try {
             const stream = await navigator.mediaDevices.getUserMedia({
-                video: { width: 1280, height: 720 }
+                video: { width: 640, height: 480 } // Lower capture resolution for faster processing
             });
             videoElement.srcObject = stream;
             await videoElement.play();
 
-            // Run detection loop
+            // Run detection loop with concurrency safety
+            let isProcessing = false;
             async function processFrame() {
-                if (videoElement.readyState >= 3) {
+                if (videoElement.readyState >= 3 && !isProcessing) {
+                    isProcessing = true;
                     await hands.send({ image: videoElement });
+                    isProcessing = false;
                 }
                 requestAnimationFrame(processFrame);
             }
