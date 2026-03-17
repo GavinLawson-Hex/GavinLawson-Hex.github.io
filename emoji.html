@@ -1,1 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hand Gesture Emoji Magic</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #0f172a;
+            color: white;
+            overflow: hidden;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        #video-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        video {
+            transform: rotateY(180deg);
+            -webkit-transform: rotateY(180deg);
+            border-radius: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            max-width: 90%;
+            max-height: 80%;
+            background: #1e293b;
+        }
+        canvas {
+            position: absolute;
+            transform: rotateY(180deg);
+            -webkit-transform: rotateY(180deg);
+            pointer-events: none;
+        }
+        .emoji-pop {
+            position: absolute;
+            font-size: 5rem;
+            pointer-events: none;
+            animation: floatUp 1.5s ease-out forwards;
+            z-index: 50;
+        }
+        @keyframes floatUp {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { opacity: 1; transform: translateY(-20px) scale(1.2); }
+            100% { transform: translateY(-150px) scale(1); opacity: 0; }
+        }
+        .status-badge {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            padding: 8px 16px;
+            background: rgba(0,0,0,0.6);
+            border-radius: 50px;
+            backdrop-filter: blur(5px);
+            border: 1px solid rgba(255,255,255,0.1);
+            z-index: 100;
+        }
+        .gesture-hint {
+            position: absolute;
+            bottom: 40px;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 15px 30px;
+            border-radius: 15px;
+            border: 1px solid #334155;
+            display: flex;
+            gap: 20px;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
 
+<div id="video-container">
+    <div class="status-badge" id="status">Initializing Camera...</div>
+    
+    <video id="webcam" autoplay playsinline></video>
+    <canvas id="output_canvas"></canvas>
+
+    <div class="gesture-hint">
+        <div class="text-center"><span class="block text-2xl">🖐️</span><span class="text-xs">Open Hand</span></div>
+        <div class="text-center"><span class="block text-2xl">✊</span><span class="text-xs">Fist</span></div>
+        <div class="text-center"><span class="block text-2xl">✌️</span><span class="text-xs">Peace</span></div>
+        <div class="text-center"><span class="block text-2xl">🤟</span><span class="text-xs">Rock On</span></div>
+        <div class="text-center"><span class="block text-2xl">☝️</span><span class="text-xs">Point</span></div>
+    </div>
+</div>
+
+<script>
+    const videoElement = document.getElementById('webcam');
+    const canvasElement = document.getElementById('output_canvas');
+    const canvasCtx = canvasElement.getContext('2d');
+    const statusLabel = document.getElementById('status');
+    const container = document.getElementById('video-container');
+
+    let lastGesture = "";
+    let gestureCooldown = false;
+
+    function onResults(results) {
+        // Prepare canvas
+        canvasElement.width = videoElement.clientWidth;
+        canvasElement.height = videoElement.clientHeight;
+        canvasCtx.save();
+        canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+            statusLabel.innerText = "Hand Detected";
+            statusLabel.style.color = "#4ade80"; // green-400
+
+            for (const landmarks of results.multiHandLandmarks) {
+                // Draw skeleton
+                drawConnectors(canvasCtx, landmarks, HAND_CONNECTIONS, {color: '#00FF00', lineWidth: 5});
+                drawLandmarks(canvasCtx, landmarks, {color: '#FF0000', lineWidth: 2});
+
+                // Analyze Gesture
+                const gesture = analyzeGesture(landmarks);
+                if (gesture && gesture !== lastGesture && !gestureCooldown) {
+                    triggerEmoji(gesture, landmarks[9]); // Use middle finger base for position
+                    lastGesture = gesture;
+                    gestureCooldown = true;
+                    setTimeout(() => { gestureCooldown = false; }, 800);
+                } else if (!gesture) {
+                    lastGesture = "";
+                }
+            }
+        } else {
+            statusLabel.innerText = "No Hand Detected";
+            statusLabel.style.color = "#ffffff";
+        }
+        canvasCtx.restore();
+    }
+
+    function analyzeGesture(lm) {
+        const isFingerUp = (tip, mcp) => lm[tip].y < lm[mcp].y;
+        
+        const indexUp = isFingerUp(8, 6);
+        const middleUp = isFingerUp(12, 10);
+        const ringUp = isFingerUp(16, 14);
+        const pinkyUp = isFingerUp(20, 18);
+
+        // 1. Open Hand (All fingers up)
+        if (indexUp && middleUp && ringUp && pinkyUp) return "✨";
+        
+        // 2. Peace Sign (Index and Middle up)
+        if (indexUp && middleUp && !ringUp && !pinkyUp) return "✌️";
+
+        // 3. Rock On (Index and Pinky up)
+        if (indexUp && !middleUp && !ringUp && pinkyUp) return "🤘";
+
+        // 4. Point (Only Index up)
+        if (indexUp && !middleUp && !ringUp && !pinkyUp) return "🎯";
+
+        // 5. Fist (All fingers down)
+        if (!indexUp && !middleUp && !ringUp && !pinkyUp) return "🔥";
+
+        return null;
+    }
+
+    function triggerEmoji(emoji, position) {
+        const span = document.createElement('span');
+        span.className = 'emoji-pop';
+        span.innerText = emoji;
+        
+        const x = (1 - position.x) * canvasElement.width + canvasElement.offsetLeft;
+        const y = position.y * canvasElement.height + canvasElement.offsetTop;
+        
+        span.style.left = `${x}px`;
+        span.style.top = `${y}px`;
+        
+        container.appendChild(span);
+        setTimeout(() => span.remove(), 2000);
+    }
+
+    const hands = new Hands({
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    hands.setOptions({
+        maxNumHands: 1,
+        modelComplexity: 1,
+        minDetectionConfidence: 0.7,
+        minTrackingConfidence: 0.7
+    });
+
+    hands.onResults(onResults);
+
+    // Improved Setup Camera with fallback
+    async function startCamera() {
+        const constraints = [
+            { video: { width: { ideal: 1280 }, height: { ideal: 720 } } },
+            { video: true } // Simple fallback
+        ];
+
+        let stream = null;
+        
+        for (const constraint of constraints) {
+            try {
+                stream = await navigator.mediaDevices.getUserMedia(constraint);
+                if (stream) break;
+            } catch (e) {
+                console.log("Constraint failed, trying next...", e);
+            }
+        }
+
+        if (stream) {
+            videoElement.srcObject = stream;
+            videoElement.onloadedmetadata = () => {
+                statusLabel.innerText = "System Ready!";
+                detect();
+            };
+        } else {
+            statusLabel.innerText = "Error: Camera not found or denied";
+            statusLabel.style.color = "#f87171"; // red-400
+        }
+    }
+
+    async function detect() {
+        if (videoElement.readyState >= 2) {
+            await hands.send({image: videoElement});
+        }
+        requestAnimationFrame(detect);
+    }
+
+    window.onload = startCamera;
+</script>
+
+</body>
+</html>
