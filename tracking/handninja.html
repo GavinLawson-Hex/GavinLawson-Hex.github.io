@@ -3,17 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hand Ninja - Camera Edition</title>
+    <title>Hand Ninja - Performance Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- MediaPipe Hands Libraries -->
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <!-- MediaPipe Hands Library - Using specific version for stability -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/hands.js" crossorigin="anonymous"></script>
     <style>
         body {
             margin: 0;
             overflow: hidden;
-            background-color: #000;
+            background-color: #2c1a10;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         #game-container {
@@ -23,9 +21,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle, #1a2a3a 0%, #000000 100%);
+            background-color: #3d2b1f; /* Dojo floor base color */
+            transition: transform 0.1s ease-out;
         }
-        /* Mirror the video and canvas for natural movement */
+        /* Both video and canvas are mirrored for a natural "mirror" experience */
         #input-video, #game-canvas {
             position: absolute;
             width: 100%;
@@ -34,8 +33,12 @@
             transform: scaleX(-1);
         }
         #input-video {
-            opacity: 0.2; /* Darker background for better contrast */
-            filter: grayscale(0.3) contrast(1.2);
+            opacity: 0.01; /* Must be slightly visible for some browsers to keep tracking active */
+            pointer-events: none;
+            z-index: 0;
+        }
+        #game-canvas {
+            z-index: 1;
         }
         #ui-layer {
             position: absolute;
@@ -43,7 +46,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            pointer-events: none;
+            pointer-events: none; 
             z-index: 10;
             display: flex;
             flex-direction: column;
@@ -53,51 +56,63 @@
         }
         .menu-card {
             pointer-events: auto;
-            background: rgba(0, 0, 0, 0.9);
-            backdrop-filter: blur(15px);
+            background: rgba(30, 15, 10, 0.85);
+            backdrop-filter: blur(8px);
             border-radius: 2rem;
             padding: 3rem;
             text-align: center;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+            border: 2px solid rgba(139, 69, 19, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+        }
+        .shake { animation: shake 0.4s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-2px, 0, 0); }
+            20%, 80% { transform: translate3d(4px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-8px, 0, 0); }
+            40%, 60% { transform: translate3d(8px, 0, 0); }
         }
     </style>
 </head>
 <body>
 
 <div id="game-container">
-    <video id="input-video" playsinline></video>
+    <video id="input-video" playsinline muted></video>
     <canvas id="game-canvas"></canvas>
 
     <div id="ui-layer">
         <!-- HUD -->
         <div id="hud" class="flex justify-between items-start w-full opacity-0 transition-opacity duration-500">
             <div class="flex flex-col">
-                <div class="text-xs uppercase tracking-[0.3em] opacity-50 mb-1">Current Score</div>
-                <div class="text-6xl font-black italic tracking-tighter" id="score-val">0</div>
+                <div class="text-xs uppercase tracking-[0.3em] text-orange-400 mb-1">Score</div>
+                <div class="text-7xl font-black italic tracking-tighter" id="score-val">0</div>
+                <div class="text-[10px] uppercase tracking-widest text-white/40 mt-1" id="difficulty-indicator">Level: Beginner</div>
             </div>
             <div class="flex flex-col items-end">
                 <div id="lives-container" class="text-4xl filter drop-shadow-[0_0_10px_rgba(255,0,0,0.5)]">❤️❤️❤️</div>
-                <div class="text-[10px] uppercase tracking-widest mt-3 opacity-40 bg-white/10 px-3 py-1 rounded-full">Tracking Index Finger</div>
+                <div class="text-[10px] uppercase tracking-widest mt-3 opacity-60 bg-black/40 px-3 py-1 rounded-full border border-white/10">Precision Dojo</div>
             </div>
         </div>
 
         <!-- Start Menu -->
-        <div id="start-menu" class="m-auto menu-card max-w-lg">
-            <h1 class="text-7xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-br from-cyan-400 to-blue-600 italic tracking-tighter">HAND NINJA</h1>
-            <p class="mb-10 text-lg text-gray-400 font-light">Precision slicing with MediaPipe. <br>Avoid the bombs at all costs.</p>
-            <button id="start-btn" class="group relative bg-cyan-600 hover:bg-cyan-500 text-white font-bold py-5 px-16 rounded-2xl text-2xl transition-all transform hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(6,182,212,0.3)]">
+        <div id="start-menu" class="m-auto menu-card max-w-lg transition-opacity duration-300">
+            <h1 class="text-7xl font-black mb-2 text-transparent bg-clip-text bg-gradient-to-br from-orange-400 to-red-700 italic tracking-tighter">HAND NINJA</h1>
+            <p class="mb-10 text-lg text-orange-100/80 font-light">Balanced fruit sizes, precision tracking. <br>Move your hand to wake the Sensei.</p>
+            
+            <button id="start-btn" class="hidden bg-orange-800 hover:bg-orange-700 text-white font-bold py-5 px-16 rounded-2xl text-2xl transition-all border-b-4 border-orange-950 shadow-lg active:translate-y-1 active:border-b-0">
                 ENTER DOJO
             </button>
-            <div id="loading-msg" class="mt-8 text-xs text-cyan-500 font-mono tracking-widest uppercase animate-pulse">Initializing Vision Systems...</div>
+            
+            <div id="loading-msg" class="mt-8 text-xs text-orange-500 font-mono tracking-widest uppercase animate-pulse">
+                Detecting Hand...
+            </div>
         </div>
 
         <!-- Game Over Menu -->
         <div id="game-over-menu" class="m-auto menu-card hidden">
-            <h1 class="text-6xl font-black mb-2 text-red-500 italic tracking-tighter">GAME OVER</h1>
-            <p class="text-4xl mb-8 font-light">Score: <span class="font-bold text-cyan-400" id="final-score">0</span></p>
-            <button id="restart-btn" class="bg-white text-black font-black py-4 px-12 rounded-xl text-xl hover:bg-cyan-500 hover:text-white transition-all transform hover:-rotate-1">
-                RETRY SESSION
+            <h1 class="text-6xl font-black mb-2 text-red-600 italic tracking-tighter">DISHONOR!</h1>
+            <p class="text-4xl mb-8 font-light text-orange-100">Final Score: <span class="font-bold text-orange-500" id="final-score">0</span></p>
+            <button id="restart-btn" class="bg-orange-100 text-orange-900 font-black py-4 px-12 rounded-xl text-xl hover:bg-white transition-all">
+                TRY AGAIN
             </button>
         </div>
     </div>
@@ -106,125 +121,247 @@
 <script>
     const videoElement = document.getElementById('input-video');
     const canvasElement = document.getElementById('game-canvas');
+    const gameContainer = document.getElementById('game-container');
     const canvasCtx = canvasElement.getContext('2d');
     const scoreVal = document.getElementById('score-val');
+    const difficultyIndicator = document.getElementById('difficulty-indicator');
     const livesContainer = document.getElementById('lives-container');
     const startMenu = document.getElementById('start-menu');
+    const startBtn = document.getElementById('start-btn');
     const gameOverMenu = document.getElementById('game-over-menu');
     const hud = document.getElementById('hud');
     const finalScoreDisplay = document.getElementById('final-score');
     const loadingMsg = document.getElementById('loading-msg');
 
-    // Game State
+    const bgCanvas = document.createElement('canvas');
+    const bgCtx = bgCanvas.getContext('2d');
+
     let score = 0;
     let lives = 3;
     let isGameRunning = false;
+    let isTrackingWarmedUp = false;
     let fruits = [];
+    let slicedPieces = []; 
     let particles = [];
     let handPath = []; 
     const MAX_PATH_LENGTH = 10; 
+    const MAX_PARTICLES = 80;
+    const MAX_PIECES = 25;
     
     const FRUIT_TYPES = [
-        { emoji: '🍎', points: 10, size: 65, hitbox: 1.6 },
-        { emoji: '🍊', points: 10, size: 60, hitbox: 1.6 },
-        { emoji: '🍉', points: 20, size: 90, hitbox: 1.9 },
-        { emoji: '🍍', points: 15, size: 80, hitbox: 1.7 },
-        { emoji: '🍓', points: 5, size: 45, hitbox: 1.5 },
-        { emoji: '💣', points: -1, size: 75, hitbox: 1.0, isBomb: true }
+        { emoji: '🍎', points: 10, size: 85,  hitbox: 1.6, color: '#ff3b30' },
+        { emoji: '🍊', points: 10, size: 80,  hitbox: 1.6, color: '#ff9500' },
+        { emoji: '🍉', points: 20, size: 120, hitbox: 1.9, color: '#4cd964' },
+        { emoji: '🍍', points: 15, size: 105, hitbox: 1.7, color: '#ffcc00' },
+        { emoji: '🍓', points: 5, size: 60,  hitbox: 1.5, color: '#ff2d55' },
+        { emoji: '🍇', points: 12, size: 75,  hitbox: 1.6, color: '#af52de' },
+        { emoji: '🥝', points: 18, size: 70,  hitbox: 1.5, color: '#8bc34a' },
+        { emoji: '🍑', points: 10, size: 85,  hitbox: 1.6, color: '#ffab91' },
+        { emoji: '🍋', points: 10, size: 80,  hitbox: 1.6, color: '#ffeb3b' },
+        { emoji: '🍌', points: 15, size: 90,  hitbox: 1.7, color: '#ffd600' }
     ];
+    const BOMB_TYPE = { emoji: '💣', points: -1, size: 85, hitbox: 1.0, isBomb: true, color: '#000000' };
 
-    // Initialize MediaPipe Hands
     const hands = new Hands({
-        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+        locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands@0.4.1646424915/${file}`
     });
 
     hands.setOptions({
         maxNumHands: 1,
         modelComplexity: 1,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
+        minDetectionConfidence: 0.6,
+        minTrackingConfidence: 0.6,
+        selfieMode: true // Essential for the mirrored display
     });
 
-    hands.onResults(onResults);
+    hands.onResults((results) => {
+        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
+            if (!isTrackingWarmedUp) {
+                isTrackingWarmedUp = true;
+                loadingMsg.innerText = "Tracking Active";
+                startBtn.classList.remove('hidden');
+                setTimeout(() => loadingMsg.classList.add('hidden'), 500);
+            }
 
-    const camera = new Camera(videoElement, {
-        onFrame: async () => {
-            await hands.send({image: videoElement});
-        },
-        width: 1280,
-        height: 720
+            const landmarks = results.multiHandLandmarks[0];
+            const tip = landmarks[8]; 
+            const currentFingerPos = getCanvasCoords(tip);
+            
+            if (isGameRunning && handPath.length > 0) {
+                checkSlices(handPath[handPath.length - 1], currentFingerPos);
+            }
+            
+            handPath.push(currentFingerPos);
+            if (handPath.length > MAX_PATH_LENGTH) handPath.shift();
+        } else {
+            handPath = [];
+        }
     });
 
     function resizeCanvas() {
-        canvasElement.width = window.innerWidth;
-        canvasElement.height = window.innerHeight;
+        // Ensure dimensions are valid
+        const w = window.innerWidth || 100;
+        const h = window.innerHeight || 100;
+        
+        canvasElement.width = w;
+        canvasElement.height = h;
+        bgCanvas.width = w;
+        bgCanvas.height = h;
+        
+        drawDojoFloor(bgCtx, true);
+        
+        // Final guard against 0 width/height before drawImage
+        if (!isGameRunning && bgCanvas.width > 0 && bgCanvas.height > 0) {
+            canvasCtx.drawImage(bgCanvas, 0, 0);
+        }
     }
-    window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
 
-    // ASPECT RATIO FIX: Map landmarks to canvas accounting for object-fit: cover
+    function drawDojoFloor(ctx, clear = false) {
+        if (!ctx.canvas.width || !ctx.canvas.height) return;
+        
+        if (clear) {
+            ctx.fillStyle = '#3d2b1f';
+            ctx.fillRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+        }
+        ctx.save();
+        ctx.strokeStyle = '#4a3526';
+        ctx.lineWidth = 2;
+        ctx.globalAlpha = 1.0;
+        for(let x=0; x < ctx.canvas.width; x += 80) {
+            ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, ctx.canvas.height); ctx.stroke();
+        }
+        for(let y=0; y < ctx.canvas.height; y += 80) {
+            ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(ctx.canvas.width, y); ctx.stroke();
+        }
+        ctx.restore();
+    }
+
+    window.addEventListener('resize', resizeCanvas);
+
     function getCanvasCoords(landmark) {
         const videoWidth = videoElement.videoWidth || 1280;
         const videoHeight = videoElement.videoHeight || 720;
-        const canvasWidth = canvasElement.width;
-        const canvasHeight = canvasElement.height;
+        const canvasWidth = canvasElement.width || window.innerWidth || 1280;
+        const canvasHeight = canvasElement.height || window.innerHeight || 720;
 
-        const videoAspect = videoWidth / videoHeight;
-        const canvasAspect = canvasWidth / canvasHeight;
+        // Calculate scaling to match object-fit: cover
+        const scale = Math.max(canvasWidth / videoWidth, canvasHeight / videoHeight);
+        
+        // This calculates the position of the sensor's origin in canvas space
+        const sensorXAt0 = (canvasWidth - videoWidth * scale) / 2;
+        const sensorYAt0 = (canvasHeight - videoHeight * scale) / 2;
 
-        let scale, offsetX = 0, offsetY = 0;
+        // Map normalized landmark to the correctly scaled and positioned canvas coordinate
+        const mappedX = sensorXAt0 + (landmark.x * videoWidth * scale);
+        const mappedY = sensorYAt0 + (landmark.y * videoHeight * scale);
 
-        if (videoAspect > canvasAspect) {
-            // Video is wider than canvas (sides are cropped)
-            scale = canvasHeight / videoHeight;
-            offsetX = (videoWidth * scale - canvasWidth) / 2;
-        } else {
-            // Video is taller than canvas (top/bottom are cropped)
-            scale = canvasWidth / videoWidth;
-            offsetY = (videoHeight * scale - canvasHeight) / 2;
-        }
-
+        // Mirror check: Since the canvas is mirrored with CSS scaleX(-1), 
+        // to draw a point at screen-left, we need to draw at canvas-right.
+        // landmark.x = 0 is user-left (screen-left) because of selfieMode: true.
+        // So landmark.x = 0 -> mappedX near 0.
+        // To show up on screen-left, the canvas needs the point at canvasWidth - mappedX.
         return {
-            x: (landmark.x * videoWidth * scale) - offsetX,
-            y: (landmark.y * videoHeight * scale) - offsetY
+            x: canvasWidth - mappedX,
+            y: mappedY
         };
+    }
+
+    function getDifficulty() {
+        return Math.min(score / 5000, 1.0);
+    }
+
+    function updateDifficultyUI() {
+        const d = getDifficulty();
+        let rank = "Beginner";
+        if (d > 0.8) rank = "Grandmaster";
+        else if (d > 0.6) rank = "Master";
+        else if (d > 0.4) rank = "Ninja";
+        else if (d > 0.2) rank = "Apprentice";
+        difficultyIndicator.innerText = `Level: ${rank}`;
+    }
+
+    function addSplatterToBackground(x, y, color) {
+        bgCtx.save();
+        bgCtx.translate(x, y);
+        bgCtx.fillStyle = color;
+        bgCtx.globalAlpha = 0.55;
+        const numBlobs = 8 + Math.floor(Math.random() * 5);
+        for(let i=0; i < numBlobs; i++) {
+            const ox = (Math.random() - 0.5) * 100;
+            const oy = (Math.random() - 0.5) * 100;
+            const r = Math.random() * 25 + 5;
+            bgCtx.beginPath(); bgCtx.arc(ox, oy, r, 0, Math.PI * 2); bgCtx.fill();
+            bgCtx.fillRect(ox - 2, oy, 4, Math.random() * 50 + 10);
+        }
+        bgCtx.restore();
+    }
+
+    class SlicedPiece {
+        constructor(x, y, vx, vy, rotation, rv, emoji, size, side) {
+            this.x = x; this.y = y; this.vx = vx; this.vy = vy;
+            this.rotation = rotation; this.rv = rv;
+            this.emoji = emoji; this.size = size; this.side = side; 
+            this.gravity = 0.25; this.alpha = 1;
+        }
+        update() {
+            this.x += this.vx; this.y += this.vy;
+            this.vy += this.gravity; this.rotation += this.rv;
+            this.alpha -= 0.03;
+            return this.y < canvasElement.height + 150 && this.alpha > 0;
+        }
+        draw(ctx) {
+            ctx.save();
+            ctx.translate(this.x, this.y);
+            ctx.rotate(this.rotation);
+            ctx.globalAlpha = Math.max(0, this.alpha);
+            ctx.font = `${this.size}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.beginPath();
+            if (this.side === 0) ctx.rect(-this.size, -this.size, this.size, this.size * 2);
+            else ctx.rect(0, -this.size, this.size, this.size * 2);
+            ctx.clip();
+            ctx.fillText(this.emoji, 0, 0);
+            ctx.restore();
+        }
     }
 
     class Fruit {
         constructor() {
-            const config = Math.random() < 0.12 ? FRUIT_TYPES[5] : FRUIT_TYPES[Math.floor(Math.random() * 5)];
+            const d = getDifficulty();
+            const bombChance = 0.08 + (d * 0.12);
+            const config = Math.random() < bombChance ? BOMB_TYPE : FRUIT_TYPES[Math.floor(Math.random() * FRUIT_TYPES.length)];
             
+            this.config = config;
             this.emoji = config.emoji;
             this.points = config.points;
             this.size = config.size;
             this.hitboxRadius = (config.size / 2) * config.hitbox;
             this.isBomb = config.isBomb || false;
-            
             this.x = Math.random() * (canvasElement.width * 0.8) + (canvasElement.width * 0.1);
             this.y = canvasElement.height + 100;
             
             const centerX = canvasElement.width / 2;
-            this.vx = (centerX - this.x) * (0.008 + Math.random() * 0.012);
-            this.vy = -(Math.random() * 5 + 13);
-            this.gravity = 0.22;
+            const speedMultiplier = 1 + (d * 0.4);
+            this.vx = (centerX - this.x) * (0.006 + Math.random() * 0.008);
+            this.vy = -(Math.random() * 4 + 14) * speedMultiplier;
+            this.gravity = 0.22 * speedMultiplier;
+            
             this.rotation = Math.random() * Math.PI * 2;
-            this.rv = (Math.random() - 0.5) * 0.12;
+            this.rv = (Math.random() - 0.5) * 0.15;
             this.sliced = false;
         }
-
         update() {
             this.x += this.vx;
             this.y += this.vy;
             this.vy += this.gravity;
             this.rotation += this.rv;
-            
             if (this.y > canvasElement.height + 200 && !this.sliced) {
                 if (!this.isBomb) loseLife();
                 return false;
             }
             return true;
         }
-
         draw(ctx) {
             ctx.save();
             ctx.translate(this.x, this.y);
@@ -232,15 +369,10 @@
             ctx.font = `${this.size}px Arial`;
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
-            
             if (this.isBomb) {
-                ctx.shadowBlur = 30;
-                ctx.shadowColor = 'rgba(255, 50, 50, 0.9)';
-            } else {
-                ctx.shadowBlur = 10;
-                ctx.shadowColor = 'rgba(0, 0, 0, 0.5)';
+                ctx.shadowBlur = 40;
+                ctx.shadowColor = 'rgba(255, 50, 50, 1)';
             }
-
             ctx.fillText(this.emoji, 0, 0);
             ctx.restore();
         }
@@ -248,92 +380,90 @@
 
     class Particle {
         constructor(x, y, color) {
-            this.x = x;
-            this.y = y;
-            this.vx = (Math.random() - 0.5) * 12;
-            this.vy = (Math.random() - 0.5) * 12;
-            this.alpha = 1;
-            this.color = color;
-            this.size = Math.random() * 4 + 1;
+            this.x = x; this.y = y;
+            this.vx = (Math.random() - 0.5) * 18;
+            this.vy = (Math.random() - 0.5) * 18;
+            this.alpha = 1; this.color = color;
+            this.size = Math.random() * 7 + 1;
         }
-
         update() {
-            this.x += this.vx;
-            this.y += this.vy;
-            this.alpha -= 0.04;
-            return this.alpha > 0;
+            this.x += this.vx; this.y += this.vy;
+            this.alpha -= 0.05; return this.alpha > 0;
         }
-
         draw(ctx) {
-            ctx.globalAlpha = this.alpha;
+            ctx.globalAlpha = Math.max(0, this.alpha);
             ctx.fillStyle = this.color;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.globalAlpha = 1;
+            ctx.beginPath(); ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2); ctx.fill();
         }
     }
 
-    function onResults(results) {
+    function gameLoop() {
         canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+        
+        // Background Decay logic for performance
+        bgCtx.save();
+        bgCtx.globalAlpha = 0.0015; 
+        bgCtx.fillStyle = '#3d2b1f';
+        bgCtx.fillRect(0, 0, bgCanvas.width, bgCanvas.height);
+        bgCtx.restore();
+        drawDojoFloor(bgCtx, false);
 
-        if (results.multiHandLandmarks && results.multiHandLandmarks.length > 0) {
-            const landmarks = results.multiHandLandmarks[0];
-            const tip = landmarks[8]; 
-            
-            // Map the coordinates correctly accounting for scaling/cropping
-            const currentFingerPos = getCanvasCoords(tip);
-
-            handPath.push(currentFingerPos);
-            if (handPath.length > MAX_PATH_LENGTH) handPath.shift();
-
-            if (isGameRunning && handPath.length > 1) {
-                const lastPos = handPath[handPath.length - 2];
-                checkSlices(lastPos, currentFingerPos);
-            }
-        } else {
-            handPath = [];
+        canvasCtx.globalAlpha = 1;
+        // Safeguard for drawing background
+        if (bgCanvas.width > 0 && bgCanvas.height > 0) {
+            canvasCtx.drawImage(bgCanvas, 0, 0);
         }
 
         if (isGameRunning) {
-            updateGame();
+            slicedPieces = slicedPieces.filter(p => {
+                const alive = p.update();
+                if (alive) p.draw(canvasCtx);
+                return alive;
+            });
+            if (slicedPieces.length > MAX_PIECES) slicedPieces.shift();
+
+            fruits = fruits.filter(f => {
+                const alive = f.update();
+                if (alive) f.draw(canvasCtx);
+                return alive && !f.sliced;
+            });
+
+            particles = particles.filter(p => {
+                const alive = p.update();
+                if (alive) p.draw(canvasCtx);
+                return alive;
+            });
+            if (particles.length > MAX_PARTICLES) particles.shift();
+
+            const d = getDifficulty();
+            const baseSpawnChance = 0.025 + (d * 0.06);
+            if (Math.random() < baseSpawnChance) {
+                const isBurst = Math.random() < (d * 0.4);
+                const count = isBurst ? Math.floor(Math.random() * 2) + 1 : 1;
+                for(let i=0; i<count; i++) fruits.push(new Fruit());
+            }
         }
 
-        // Sleeker Blade Trail
         if (handPath.length > 1) {
-            canvasCtx.shadowBlur = 15;
+            canvasCtx.shadowBlur = 20;
             canvasCtx.shadowColor = '#00f2ff';
             canvasCtx.lineCap = 'round';
             canvasCtx.lineJoin = 'round';
-            
-            // Outer glow (thinner than before)
             canvasCtx.beginPath();
-            canvasCtx.strokeStyle = 'rgba(0, 242, 255, 0.4)';
-            canvasCtx.lineWidth = 10;
+            canvasCtx.strokeStyle = 'white';
+            canvasCtx.lineWidth = 5;
             canvasCtx.moveTo(handPath[0].x, handPath[0].y);
-            for (let i = 1; i < handPath.length; i++) {
-                canvasCtx.lineTo(handPath[i].x, handPath[i].y);
-            }
+            for (let i = 1; i < handPath.length; i++) canvasCtx.lineTo(handPath[i].x, handPath[i].y);
             canvasCtx.stroke();
-            
-            // Inner core (very sharp)
-            canvasCtx.beginPath();
-            canvasCtx.strokeStyle = '#fff';
-            canvasCtx.lineWidth = 3;
-            canvasCtx.moveTo(handPath[0].x, handPath[0].y);
-            for (let i = 1; i < handPath.length; i++) {
-                canvasCtx.lineTo(handPath[i].x, handPath[i].y);
-            }
-            canvasCtx.stroke();
-            
             canvasCtx.shadowBlur = 0;
         }
+
+        requestAnimationFrame(gameLoop);
     }
 
     function checkSlices(p1, p2) {
         fruits.forEach((fruit) => {
             if (fruit.sliced) return;
-
             const dist = distToSegment(fruit.x, fruit.y, p1.x, p1.y, p2.x, p2.y);
             if (dist < fruit.hitboxRadius) {
                 fruit.sliced = true;
@@ -342,16 +472,18 @@
                 } else {
                     score += fruit.points;
                     scoreVal.innerText = score;
-                    createParticles(fruit.x, fruit.y, '#00f2ff');
-                    
-                    // Slice flash
-                    canvasCtx.fillStyle = 'rgba(255, 255, 255, 0.6)';
-                    canvasCtx.beginPath();
-                    canvasCtx.arc(fruit.x, fruit.y, 30, 0, Math.PI * 2);
-                    canvasCtx.fill();
+                    updateDifficultyUI();
+                    createParticles(fruit.x, fruit.y, fruit.config.color);
+                    splitFruit(fruit);
+                    addSplatterToBackground(fruit.x, fruit.y, fruit.config.color);
                 }
             }
         });
+    }
+
+    function splitFruit(fruit) {
+        slicedPieces.push(new SlicedPiece(fruit.x, fruit.y, -6, fruit.vy, fruit.rotation, -0.25, fruit.emoji, fruit.size, 0));
+        slicedPieces.push(new SlicedPiece(fruit.x, fruit.y, 6, fruit.vy, fruit.rotation, 0.25, fruit.emoji, fruit.size, 1));
     }
 
     function distToSegment(px, py, x1, y1, x2, y2) {
@@ -363,28 +495,7 @@
     }
 
     function createParticles(x, y, color) {
-        for (let i = 0; i < 10; i++) {
-            particles.push(new Particle(x, y, color));
-        }
-    }
-
-    function updateGame() {
-        fruits = fruits.filter(f => {
-            const alive = f.update();
-            if (alive) f.draw(canvasCtx);
-            return alive && !f.sliced;
-        });
-
-        particles = particles.filter(p => {
-            const alive = p.update();
-            if (alive) p.draw(canvasCtx);
-            return alive;
-        });
-
-        const spawnChance = 0.025 + (score / 18000);
-        if (Math.random() < spawnChance) {
-            fruits.push(new Fruit());
-        }
+        for (let i = 0; i < 10; i++) particles.push(new Particle(x, y, color));
     }
 
     function loseLife() {
@@ -395,17 +506,14 @@
 
     function updateLivesUI() {
         let hearts = '';
-        for (let i = 0; i < 3; i++) {
-            hearts += i < lives ? '❤️' : '🖤';
-        }
+        for (let i = 0; i < 3; i++) hearts += i < lives ? '❤️' : '🖤';
         livesContainer.innerText = hearts;
     }
 
     function triggerBomb() {
-        createParticles(canvasElement.width/2, canvasElement.height/2, '#ff3232');
-        lives = 0;
-        updateLivesUI();
-        endGame();
+        gameContainer.classList.add('shake');
+        setTimeout(() => gameContainer.classList.remove('shake'), 400);
+        loseLife();
     }
 
     function endGame() {
@@ -416,11 +524,11 @@
     }
 
     function startGame() {
-        score = 0;
-        lives = 3;
-        fruits = [];
-        particles = [];
+        score = 0; lives = 3;
+        fruits = []; slicedPieces = []; particles = []; 
+        drawDojoFloor(bgCtx, true); 
         scoreVal.innerText = '0';
+        updateDifficultyUI();
         updateLivesUI();
         startMenu.classList.add('hidden');
         gameOverMenu.classList.add('hidden');
@@ -428,12 +536,38 @@
         isGameRunning = true;
     }
 
-    camera.start().then(() => {
-        loadingMsg.innerText = "Vision Authenticated";
-        setTimeout(() => loadingMsg.classList.add('opacity-0'), 1000);
-    }).catch(err => {
-        loadingMsg.innerText = "Error: Camera Access Denied";
-    });
+    async function initVision() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({
+                video: { width: 1280, height: 720 }
+            });
+            videoElement.srcObject = stream;
+            await videoElement.play();
+
+            // Run detection loop
+            async function processFrame() {
+                if (videoElement.readyState >= 3) {
+                    await hands.send({ image: videoElement });
+                }
+                requestAnimationFrame(processFrame);
+            }
+            processFrame();
+
+            resizeCanvas(); 
+            gameLoop(); 
+            
+            loadingMsg.innerText = "SENSEI READY";
+            setTimeout(() => {
+                if (!isTrackingWarmedUp) loadingMsg.innerText = "MOVE HAND TO START";
+            }, 1000);
+            
+        } catch (err) {
+            loadingMsg.innerText = "CAMERA ACCESS REQUIRED";
+            console.error(err);
+        }
+    }
+
+    initVision();
 
     document.getElementById('start-btn').addEventListener('click', startGame);
     document.getElementById('restart-btn').addEventListener('click', startGame);
