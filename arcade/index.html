@@ -16,16 +16,16 @@
         }
 
         body {
-    background-color: var(--bg-dark);
-    color: white;
-    font-family: 'Orbitron', sans-serif;
-    /* Allow scrolling on the menu, but we'll manage the game wrappers via JS */
-    overflow-x: hidden; 
-    overflow-y: auto;
-    margin: 0;
-    min-height: 100vh;
-    user-select: none;
-}
+            background-color: var(--bg-dark);
+            color: white;
+            font-family: 'Orbitron', sans-serif;
+            /* Allow scrolling on the menu, but we'll manage the game wrappers via JS */
+            overflow-x: hidden; 
+            overflow-y: auto;
+            margin: 0;
+            min-height: 100vh;
+            user-select: none;
+        }
 
         .pixel-font { font-family: 'Press Start 2P', cursive; }
         .hidden-view { display: none !important; }
@@ -35,39 +35,38 @@
         .neon-text-blue { text-shadow: 0 0 5px #fff, 0 0 10px #fff, 0 0 20px var(--neon-blue), 0 0 30px var(--neon-blue), 0 0 40px var(--neon-blue); }
 
         /* Menu Cabinet Cards */
-        /* Optimized Menu Cabinet Cards for 5/4 Layout */
-/* Cabinet Cards: Mobile 2-per-row, Desktop 5-per-row */
-.cabinet-card {
-    background: #111;
-    border: 4px solid #333;
-    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    position: relative;
-    overflow: hidden;
-    cursor: pointer;
-    text-decoration: none;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    aspect-ratio: 3/4;
-    
-    /* Mobile: 2 per row (accounting for the 1.5rem gap) */
-    width: calc(50% - 0.75rem); 
-}
+        .cabinet-card {
+            background: #111;
+            border: 4px solid #333;
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 3/4;
+            min-width: 100px; /* Crucial: Allows the JS math to shrink/grow them without breaking */
+        }
 
-@media (min-width: 1024px) {
-    .cabinet-card { 
-        /* Desktop: Exactly 5 per row */
-        width: calc(20% - 2rem); 
-        min-width: 160px;
-    }
-}
+        .cabinet-card h2 {
+            font-size: clamp(0.6rem, 1.5vw, 1.25rem) !important; /* Dynamically shrinks text */
+            text-align: center;
+        }
 
-.cabinet-card:hover {
-    transform: scale(1.05) translateY(-10px);
-    border-color: var(--neon-blue) !important;
-    box-shadow: 0 0 20px var(--neon-blue);
-}
+        .game-icon { 
+            font-size: clamp(2rem, 4vw, 4rem); /* Dynamically shrinks the emoji */
+            margin-bottom: 1rem; 
+            filter: drop-shadow(0 0 10px currentColor); 
+        }
+
+        .cabinet-card:hover {
+            transform: scale(1.05) translateY(-10px);
+            border-color: var(--neon-blue) !important;
+            box-shadow: 0 0 20px var(--neon-blue);
+        }
 
         @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-10px); } 100% { transform: translateY(0px); } }
         .animate-float { animation: float 3s ease-in-out infinite; }
@@ -79,6 +78,9 @@
             transform: rotateX(60deg) translateY(-200px);
             z-index: -1; pointer-events: none;
         }
+
+        /* --- GLOBAL LEADERBOARD OVERLAY --- */
+        /* ... Keep the rest of your CSS exactly the same below this point ... */
 
         /* --- GLOBAL LEADERBOARD OVERLAY --- */
         #global-leaderboard-overlay {
@@ -237,7 +239,7 @@
             <p class="text-sm md:text-lg text-cyan-400 tracking-widest uppercase">Select your game to start</p>
         </header>
 
-        <main class="flex flex-wrap justify-center gap-4 md:gap-10 max-w-7xl w-full overflow-y-visible pb-20">
+        <main id="arcade-menu" class="flex flex-wrap justify-center gap-4 md:gap-6 w-full max-w-[95vw]">
     <div onclick="launchGame('PACMAN')" class="cabinet-card rounded-xl group" style="border-color: #FFFF00;">
         <div class="game-icon text-yellow-400">🟡</div>
         <h2 class="pixel-font text-[10px] md:text-xl text-yellow-400 mb-2">PAC-MAN</h2>
@@ -829,6 +831,33 @@
         document.querySelectorAll('.game-wrapper').forEach(el => el.classList.add('hidden-view'));
         document.getElementById('menu-view').classList.remove('hidden-view');
     }
+
+    /* =========================================================================
+       DYNAMIC MENU LAYOUT
+       ========================================================================= */
+    function formatMenuLayout() {
+        const menu = document.getElementById('arcade-menu');
+        if (!menu) return;
+        
+        const cabinets = menu.querySelectorAll('.cabinet-card');
+        const totalGames = cabinets.length;
+        
+        // Calculate how many games go on the top row (always rounds up for odd numbers)
+        // With 11 games: Math.ceil(11/2) = 6 games on the top row.
+        const topRowCount = Math.ceil(totalGames / 2);
+        
+        // Calculate the exact percentage width each cabinet needs to force the wrap perfectly
+        const basisPercentage = 100 / topRowCount;
+        
+        cabinets.forEach(cabinet => {
+            // Set flex-basis and max-width, subtracting the gap (1.5rem) so they fit perfectly
+            cabinet.style.flex = `1 1 calc(${basisPercentage}% - 1.5rem)`;
+            cabinet.style.maxWidth = `calc(${basisPercentage}% - 1.5rem)`;
+        });
+    }
+
+    // Run this immediately to format the grid on load
+    formatMenuLayout();
 
     // Global Escape Key to exit any game
     window.addEventListener('keydown', e => {
