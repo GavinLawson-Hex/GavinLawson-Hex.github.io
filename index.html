@@ -1,1 +1,128 @@
-hello there
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Portfolio</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            background-color: #f3f4f6;
+            color: #1f2937;
+            margin: 0;
+            padding: 2rem;
+        }
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        .portfolio-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+        }
+        .card img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .card-content {
+            padding: 1.5rem;
+            flex-grow: 1;
+        }
+        .card-title {
+            margin: 0 0 0.5rem 0;
+            font-size: 1.25rem;
+            color: #111827;
+        }
+        .card-description {
+            margin: 0;
+            color: #4b5563;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>My Portfolio Projects</h1>
+        <h4>Made by: Gavin M Lawson</h4>
+        <p>Select a card below to view the project.</p>
+    </header>
+
+    <div class="portfolio-grid" id="portfolio-grid">
+        <!-- Cards will be injected here via JavaScript -->
+    </div>
+
+    <script>
+        // 📝 Add your different index.html files and projects here!
+        const projects = [
+            {
+                title: "Firebase Hosting Setup",
+                description: "The default setup page for Firebase hosting integration.",
+                image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800&fit=crop",
+                url: "./firstore/public/index.html",
+                display: false // Change to false to hide this card
+            },
+            {
+                title: "Directory Lister",
+                description: "A PHP script that lists directory contents dynamically.",
+                image: "https://images.unsplash.com/photo-1480714378408-67cf0d13bc1b?w=800&fit=crop",
+                url: "https://vibe.csc.flcc.cloud/gavin/php/index.php",
+                display: true 
+            },
+            {
+                title: "Arcade",
+                description: "This project is the most in depth work I've done, making a fleshed out retro library.",
+                image: "https://images.unsplash.com/photo-1511497584788-876760111969?w=800&fit=crop",
+                url: "./arcade/index.html",
+                display: true // This card is hidden because display is set to false
+            },
+            {
+                title: "Toolbelt",
+                description: "This is a convenient toolbelt for everyday items.",
+                image: "https://images.unsplash.com/photo-1511497584788-876760111969?w=800&fit=crop",
+                url: "./toolbelt/",
+                display: false // This card is hidden because display is set to false
+            }
+        ];
+
+        const grid = document.getElementById('portfolio-grid');
+
+        // Filter out projects where display is false, then create the interactable cards
+        projects.filter(project => project.display).forEach(project => {
+            const card = document.createElement('a');
+            card.className = 'card';
+            card.href = project.url;
+            
+            card.innerHTML = `
+                <img src="${project.image}" alt="${project.title} Preview">
+                <div class="card-content">
+                    <h2 class="card-title">${project.title}</h2>
+                    <p class="card-description">${project.description}</p>
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    </script>
+</body>
+</html>
